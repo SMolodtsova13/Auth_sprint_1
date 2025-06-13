@@ -7,14 +7,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from db.postgres import Base
 
+MAX_LENGHT_NAME=50
+MAX_LENGHT_PASSWORD=255
+MAX_LENGHT_LOGIN=255
+
+
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    login = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
-    first_name = Column(String(50))
-    last_name = Column(String(50))
+    login = Column(String(MAX_LENGHT_LOGIN), unique=True, nullable=False)
+    password = Column(String(MAX_LENGHT_PASSWORD), nullable=False)
+    first_name = Column(String(MAX_LENGHT_NAME))
+    last_name = Column(String(MAX_LENGHT_NAME))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, login: str, password: str, first_name:str, last_name: str) -> None:
@@ -28,3 +33,4 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f'<User {self.login}>'
+
