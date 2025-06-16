@@ -20,4 +20,4 @@ class UUIDMixin:
 class CreatedAtMixin:
     """Миксин даты создания."""
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.now)

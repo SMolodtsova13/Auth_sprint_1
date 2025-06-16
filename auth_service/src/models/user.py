@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from db.postgres import Base
+from models.base import Base
 from models.mixins import UUIDMixin, CreatedAtMixin
 
 
