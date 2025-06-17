@@ -17,4 +17,3 @@ async def register_user(
     db: AsyncSession = Depends(get_session)
 ):
     return await AuthService.register_user(user_create, db)
- 

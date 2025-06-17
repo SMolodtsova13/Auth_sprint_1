@@ -10,8 +10,13 @@ MIN_VALUE_PASSWORD=6
 
 class AuthService:
     @staticmethod
-    async def register_user(user_create: UserCreate, db: AsyncSession) -> User:
-        result = await db.execute(select(User).where(User.login == user_create.login))
+    async def register_user(
+        user_create: UserCreate, db: AsyncSession
+    ) -> User:
+        # Проверка дублирования/пароля
+        result = await db.execute(
+            select(User).where(User.login == user_create.login)
+        )
         if result.scalar():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -24,7 +29,9 @@ class AuthService:
                 detail='Пароль слишком простой (менее 6 символов).'
             )
 
+        # Хешируем пароль
         hashed_password = bcrypt.hash(user_create.password)
+        # Создаём объект и сохраняем
         user = User(
             login=user_create.login,
             password=hashed_password,
