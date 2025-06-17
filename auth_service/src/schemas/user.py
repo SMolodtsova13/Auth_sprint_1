@@ -2,11 +2,18 @@ from uuid import UUID
 
 from pydantic import BaseModel, constr
 
+from core.constants import (
+    LOGIN_MAX_LENGHT, LOGIN_MIN_LENGTH, PASSWORD_MIN_LENGTH
+)
+
 
 class UserCreate(BaseModel):
 
-    login: constr(min_length=3, max_length=255)
-    password: constr(min_length=6)
+    login: constr(
+        min_length=LOGIN_MIN_LENGTH,
+        max_length=LOGIN_MAX_LENGHT
+    )
+    password: constr(min_length=PASSWORD_MIN_LENGTH)
     first_name: str
     last_name: str
 

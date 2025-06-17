@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.entity import UserCreate, UserInDB
+from schemas.user import UserCreate, UserInDB
 from services.auth import AuthService
 from db.postgres import get_session
 

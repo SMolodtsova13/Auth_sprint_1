@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from passlib.hash import bcrypt
-from models.entity import User
-from schemas.entity import UserCreate
+from models.user import User
+from schemas.user import UserCreate
 from fastapi import HTTPException, status
 
 MIN_VALUE_PASSWORD=6

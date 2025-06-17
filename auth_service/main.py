@@ -19,7 +19,7 @@ async def startup():
     redis_db.redis = redis_db.Redis(
         host='localhost', port=6379, db=0, decode_responses=True
     )
-    from models.entity import User
+    from src.models.user import User
     await postgres.create_database()
 
 @app.on_event('shutdown')
