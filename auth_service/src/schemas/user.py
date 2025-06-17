@@ -2,6 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, constr
 
+
 class UserCreate(BaseModel):
 
     login: constr(min_length=3, max_length=255)
