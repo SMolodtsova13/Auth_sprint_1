@@ -21,6 +21,14 @@ class UserCreate(BaseUser):
     last_name: str
 
 
+class SuperUserCreate(BaseModel):
+
+    login: str
+    password: str
+    first_name: str
+    last_name: str
+
+
 class UserInDB(BaseModel):
     """Схема возвращаемых данных о пользователе."""
 
