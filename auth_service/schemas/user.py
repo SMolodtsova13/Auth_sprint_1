@@ -29,6 +29,12 @@ class SuperUserCreate(BaseModel):
     last_name: str
 
 
+class UserCreate(SuperUserCreate):
+
+    login: constr(min_length=LOGIN_MIN_LENGTH, max_length=LOGIN_MAX_LENGHT)
+    password: constr(min_length=PASSWORD_MIN_LENGTH)
+
+
 class UserInDB(BaseModel):
     """Схема возвращаемых данных о пользователе."""
 
