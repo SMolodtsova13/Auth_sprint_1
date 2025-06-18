@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from auth_service.src.core.constants import PASSWORD_MIN_LENGTH
 from passlib.hash import bcrypt
 from models.user import User
 from schemas.user import UserCreate
 from fastapi import HTTPException, status
 
-MIN_VALUE_PASSWORD=6
 
 
 class AuthService:
@@ -23,7 +23,7 @@ class AuthService:
                 detail='Пользователь с таким логином уже существует.'
             )
 
-        if len(user_create.password) < MIN_VALUE_PASSWORD:
+        if len(user_create.password) < PASSWORD_MIN_LENGTH:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Пароль слишком простой (менее 6 символов).'

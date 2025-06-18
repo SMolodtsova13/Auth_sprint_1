@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models.base import Base
 from models.mixins import UUIDMixin, CreatedAtMixin
 from core.constants import (
-    LOGIN_MAX_LENGHT, NAME_MAX_LENGHT, PASSWORD_MAX_LENGHT,
+    LOGIN_MAX_LENGTH, NAME_MAX_LENGHT, PASSWORD_MAX_LENGHT,
     ROLE_NAME_MAX_LENGTH, USER_AGENT_MAX_LENGHT
 )
 
@@ -15,7 +15,7 @@ class User(UUIDMixin, CreatedAtMixin, Base):
 
     __tablename__ = 'users'
 
-    login = Column(String(LOGIN_MAX_LENGHT), unique=True, nullable=False)
+    login = Column(String(LOGIN_MAX_LENGTH), unique=True, nullable=False)
     password = Column(String(PASSWORD_MAX_LENGHT), nullable=False)
     first_name = Column(String(NAME_MAX_LENGHT))
     last_name = Column(String(NAME_MAX_LENGHT))
