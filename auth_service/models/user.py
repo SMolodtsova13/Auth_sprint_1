@@ -6,8 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models.base import Base
 from models.mixins import UUIDMixin, CreatedAtMixin
 from core.constants import (
-    LOGIN_MAX_LENGHT, NAME_MAX_LENGHT, PASSWORD_MAX_LENGHT,
-    ROLE_NAME_MAX_LENGTH, USER_AGENT_MAX_LENGHT
+    LOGIN_MAX_LENGHT, NAME_MAX_LENGHT,
+    PASSWORD_MAX_LENGHT, USER_AGENT_MAX_LENGHT
 )
 
 
@@ -51,23 +51,3 @@ class LoginHistory(UUIDMixin, Base):
     user = relationship('User', back_populates='login_history')
     user_agent = Column(String(USER_AGENT_MAX_LENGHT))
     login_at = Column(DateTime, nullable=False)
-
-
-class Role(UUIDMixin, CreatedAtMixin, Base):
-    """Модель роли."""
-
-    __tablename__ = 'roles'
-
-    name = Column(String(ROLE_NAME_MAX_LENGTH), unique=True, nullable=False)
-    user_roles = relationship('UserRole', back_populates='role')
-
-
-class UserRole(UUIDMixin, Base):
-    """Модель роли пользователя."""
-
-    __tablename__ = 'user_roles'
-
-    user_id = Column(UUID, ForeignKey('users.id'))
-    user = relationship('User', back_populates='roles')
-    role_id = Column(UUID, ForeignKey('roles.id'))
-    role = relationship('Role', back_populates='user_roles')
