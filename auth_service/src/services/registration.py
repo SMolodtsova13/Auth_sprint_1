@@ -1,18 +1,20 @@
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from auth_service.src.core.constants import PASSWORD_MIN_LENGTH
 from passlib.hash import bcrypt
+
 from models.user import User
 from schemas.user import UserCreate
-from fastapi import HTTPException, status
-
+from core.constants import PASSWORD_MIN_LENGHT
 
 
 class AuthService:
+    """Сервис для регистрации пользователей."""
     @staticmethod
     async def register_user(
         user_create: UserCreate, db: AsyncSession
     ) -> User:
+        """Регистрирует нового пользователя."""
         # Проверка дублирования/пароля
         result = await db.execute(
             select(User).where(User.login == user_create.login)
@@ -23,7 +25,7 @@ class AuthService:
                 detail='Пользователь с таким логином уже существует.'
             )
 
-        if len(user_create.password) < PASSWORD_MIN_LENGTH:
+        if len(user_create.password) < PASSWORD_MIN_LENGHT:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Пароль слишком простой (менее 6 символов).'
