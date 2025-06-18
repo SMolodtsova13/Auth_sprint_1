@@ -5,7 +5,7 @@ from models.user import User
 from schemas.user import UserCreate
 from fastapi import HTTPException, status
 
-MIN_VALUE_PASSWORD=6
+MIN_VALUE_PASSWORD = 6
 
 
 class AuthService:

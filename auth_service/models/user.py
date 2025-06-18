@@ -1,4 +1,5 @@
-from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
+from sqlalchemy import Column, DateTime, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -46,7 +47,7 @@ class LoginHistory(UUIDMixin, Base):
 
     __tablename__ = 'login_history'
 
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(UUID, ForeignKey('users.id'))
     user = relationship('User', back_populates='login_history')
     user_agent = Column(String(USER_AGENT_MAX_LENGHT))
     login_at = Column(DateTime, nullable=False)
@@ -66,7 +67,7 @@ class UserRole(UUIDMixin, Base):
 
     __tablename__ = 'user_roles'
 
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(UUID, ForeignKey('users.id'))
     user = relationship('User', back_populates='roles')
-    role_id = Column(Integer, ForeignKey('roles.id'))
+    role_id = Column(UUID, ForeignKey('roles.id'))
     role = relationship('Role', back_populates='user_roles')
