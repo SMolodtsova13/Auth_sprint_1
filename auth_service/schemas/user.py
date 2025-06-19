@@ -12,7 +12,7 @@ class BaseUser(BaseModel):
         min_length=LOGIN_MIN_LENGTH,
         max_length=LOGIN_MAX_LENGTH
     )
-    password: constr(min_length=PASSWORD_MIN_LENGHT)
+    password: constr(min_length=PASSWORD_MIN_LENGTH)
 
 
 class UserCreate(BaseUser):
@@ -49,4 +49,3 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = 'bearer'
-
