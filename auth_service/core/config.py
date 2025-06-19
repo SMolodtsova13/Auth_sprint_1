@@ -24,7 +24,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = '.env'
 
-
     @property
     def pg_url(self):
         return (
@@ -33,5 +32,6 @@ class Settings(BaseSettings):
             f'{settings.postgres_host}:{settings.postgres_port}/'
             f'{settings.postgres_db}'
         )
+
 
 settings = Settings()

@@ -6,7 +6,6 @@ from services.registration import AuthService
 from db.postgres import get_session
 from services.authentication import authenticate_user
 
-
 router = APIRouter()
 
 

@@ -5,11 +5,12 @@ from passlib.hash import bcrypt
 
 from models.user import User
 from schemas.user import UserCreate
-from core.constants import PASSWORD_MIN_LENGHT
+from core.constants import PASSWORD_MIN_LENGTH
 
 
 class AuthService:
     """Сервис для регистрации пользователей."""
+
     @staticmethod
     async def register_user(
         user_create: UserCreate, db: AsyncSession
@@ -25,7 +26,7 @@ class AuthService:
                 detail='Пользователь с таким логином уже существует.'
             )
 
-        if len(user_create.password) < PASSWORD_MIN_LENGHT:
+        if len(user_create.password) < PASSWORD_MIN_LENGTH:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Пароль слишком простой (менее 6 символов).'
