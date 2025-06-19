@@ -26,3 +26,11 @@ class UserInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RoleOperation(BaseModel):
+    user_id: UUID
+    role_id: UUID
+
+    class Config:
+        from_attributes = True

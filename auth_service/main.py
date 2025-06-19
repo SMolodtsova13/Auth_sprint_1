@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
-from api.v1 import auth
+from api.v1 import auth, roles
+
 from db import redis_db, postgres
 
 
@@ -27,3 +28,4 @@ async def shutdown():
 
 
 app.include_router(auth.router, prefix='/auth', tags=['auth'])
+app.include_router(roles.router, prefix='/api/v1')
