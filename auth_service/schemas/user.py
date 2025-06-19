@@ -7,15 +7,18 @@ from core.constants import (
 )
 
 
-class UserCreate(BaseModel):
+class SuperUserCreate(BaseModel):
 
-    login: constr(
-        min_length=LOGIN_MIN_LENGTH,
-        max_length=LOGIN_MAX_LENGHT
-    )
-    password: constr(min_length=PASSWORD_MIN_LENGTH)
+    login: str
+    password: str
     first_name: str
     last_name: str
+
+
+class UserCreate(SuperUserCreate):
+
+    login: constr(min_length=LOGIN_MIN_LENGTH, max_length=LOGIN_MAX_LENGHT)
+    password: constr(min_length=PASSWORD_MIN_LENGTH)
 
 
 class UserInDB(BaseModel):
