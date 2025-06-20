@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from models.user import User, Role, UserRole
-from schemas.user import RoleOperation
+from schemas.role import RoleOperation
 
 
 class RoleService:

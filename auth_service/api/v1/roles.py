@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.postgres import get_session
-from schemas.user import RoleOperation
+from schemas.role import RoleOperation
 from services.roles import RoleService
 
 router = APIRouter(prefix='/roles', tags=['roles'])
