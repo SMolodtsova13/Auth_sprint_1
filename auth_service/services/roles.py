@@ -5,7 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from models.user import User, Role, UserRole
+from models.user import User
+from models.role import Role, UserRole
 from schemas.role import RoleOperation
 
 
