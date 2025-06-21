@@ -109,9 +109,9 @@ docker-compose exec auth_service alembic upgrade head
 
 ## 👥 Команда
 
-[Светлана Молодцова](https://github.com/SMolodtsova13)
-[Анна Пестова](https://github.com/Anna9449)
-[Анна Зыбель](https://github.com/AnnZebel)
+[Светлана Молодцова](https://github.com/SMolodtsova13)  
+[Анна Пестова](https://github.com/Anna9449)  
+[Анна Зыбель](https://github.com/AnnZebel)  
 ---
 <!-- 
 # Проектная работа 6 спринта
