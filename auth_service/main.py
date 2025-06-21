@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from api.v1 import auth
+from api.v1 import auth, roles
 from db import redis_db, postgres
 from api.v1 import access_token
 
@@ -34,3 +34,4 @@ async def shutdown():
 # Подключение роутера авторизации
 app.include_router(auth.router, prefix='/auth', tags=['auth'])
 app.include_router(access_token.router, prefix='/auth', tags=['token'])
+app.include_router(roles.router, prefix='/api/v1')
