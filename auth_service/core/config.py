@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     # PostgreSQL
     postgres_user: str = 'postgres'
     postgres_password: str = 'postgres'
-    postgres_host: str = 'localhost'
+    postgres_host: str = 'db'
     postgres_port: int = 5432
     postgres_db: str = 'auth_db'
 

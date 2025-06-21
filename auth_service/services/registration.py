@@ -31,12 +31,10 @@ class AuthService:
                 detail='Пароль слишком простой (менее 6 символов).'
             )
 
-        # Хешируем пароль
-        hashed_password = bcrypt.hash(user_create.password)
         # Создаём объект и сохраняем
         user = User(
             login=user_create.login,
-            password=hashed_password,
+            password=user_create.password,
             first_name=user_create.first_name,
             last_name=user_create.last_name,
         )
