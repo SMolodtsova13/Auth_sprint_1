@@ -5,7 +5,8 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.postgres import async_session
-from models import User, Role, UserRole
+from models.role import Role, UserRole
+from models.user import User
 from schemas.user import SuperUserCreate
 from schemas.role import RoleCreate
 from services.base import BaseService

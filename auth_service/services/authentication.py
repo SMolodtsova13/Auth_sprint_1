@@ -5,7 +5,7 @@ from fastapi import HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from models import User, LoginHistory
+from models.user import LoginHistory, User
 from schemas.user import UserLoginRequest, TokenResponse
 from services.jwt_utils import create_access_token, create_refresh_token
 from db.redis_db import get_redis
