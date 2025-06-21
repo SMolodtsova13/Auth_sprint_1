@@ -6,14 +6,22 @@ from fastapi import HTTPException, status
 from core.config import settings
 
 
-def create_access_token(sub: str) -> str:
+def create_access_token(
+        sub: str,
+        # roles: list[str] = None
+    ) -> str:
     """
     Генерирует JWT access token с коротким сроком действия.
     """
     expire = datetime.utcnow() + timedelta(
         minutes=settings.access_token_expire_minutes
     )
-    to_encode = {'sub': sub, 'type': 'access', 'exp': expire}
+    to_encode = {
+        'sub': sub,
+        'type': 'access',
+        # 'roles': roles or [],
+        'exp': expire
+    }
     return jwt.encode(
         to_encode,
         settings.jwt_secret,

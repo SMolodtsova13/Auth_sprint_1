@@ -15,7 +15,11 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
-@router.post('/refresh', response_model=TokenResponse)
+@router.post(
+        '/refresh',
+        response_model=TokenResponse,
+        summary='Обновление access-токена'
+    )
 async def refresh_token(
     token: str = Depends(oauth2_scheme),
     redis: Redis = Depends(get_redis)
@@ -50,7 +54,10 @@ async def refresh_token(
     # Генерируем новые токены
     new_jti = str(uuid4())
     new_refresh_token = create_refresh_token(sub=user_id, jti=new_jti)
-    new_access_token = create_access_token(sub=user_id)
+    new_access_token = create_access_token(
+        sub=user_id,
+        # roles=payload.get('roles', [])
+    )
 
     # Сохраняем новый refresh-токен
     new_key = f'refresh:{user_id}:{new_jti}'

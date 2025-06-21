@@ -30,7 +30,13 @@ async def authenticate_user(
     user_id = str(user.id)
     jti = str(uuid4())
 
-    access_token = create_access_token(sub=user_id)
+    # Получаем роли пользователя
+    # roles = [role.name for role in user.roles]
+
+    access_token = create_access_token(
+        sub=user_id,
+        # roles=roles
+    )
     refresh_token = create_refresh_token(sub=user_id, jti=jti)
 
     redis = await get_redis()
