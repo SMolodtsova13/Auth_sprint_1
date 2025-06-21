@@ -4,18 +4,20 @@
 
 ## 📦 Технологии
 
-- Python 3.12+
-- FastAPI
-- PostgreSQL
-- Redis
-- SQLAlchemy 2.0 (async)
-- Alembic
-- Docker, Docker Compose
-- bcrypt
-- JWT (JSON Web Tokens)
-- ORJSON
-- Mypy, PEP8
-- Swagger (OpenAPI)
+[![Python 3.12+](https://img.shields.io/badge/-Python_3.12%2B-464646?style=flat&logo=Python&logoColor=56C0C0&color=008080)](https://www.python.org/)  
+[![FastAPI](https://img.shields.io/badge/-FastAPI-464646?style=flat&logo=FastAPI&logoColor=56C0C0&color=008080)](https://fastapi.tiangolo.com/)  
+[![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat&logo=PostgreSQL&logoColor=56C0C0&color=008080)](https://www.postgresql.org/)  
+[![Redis](https://img.shields.io/badge/-Redis-464646?style=flat&logo=Redis&logoColor=56C0C0&color=008080)](https://redis.io/)  
+[![SQLAlchemy 2.0](https://img.shields.io/badge/-SQLAlchemy_2.0-464646?style=flat&logo=sqlalchemy&logoColor=56C0C0&color=008080)](https://docs.sqlalchemy.org/)  
+[![Alembic](https://img.shields.io/badge/-Alembic-464646?style=flat&logo=alembic&logoColor=56C0C0&color=008080)](https://alembic.sqlalchemy.org/)  
+[![Docker](https://img.shields.io/badge/-Docker-464646?style=flat&logo=Docker&logoColor=56C0C0&color=008080)](https://www.docker.com/)  
+[![Docker Compose](https://img.shields.io/badge/-Docker_Compose-464646?style=flat&logo=Docker&logoColor=56C0C0&color=008080)](https://docs.docker.com/compose/)  
+[![JWT](https://img.shields.io/badge/-JWT-464646?style=flat&logo=JSON%20web%20tokens&logoColor=56C0C0&color=008080)](https://jwt.io/)  
+[![ORJSON](https://img.shields.io/badge/-ORJSON-464646?style=flat&logo=Python&logoColor=56C0C0&color=008080)](https://github.com/ijl/orjson)  
+[![Mypy](https://img.shields.io/badge/-Mypy-464646?style=flat&logo=Python&logoColor=56C0C0&color=008080)](http://mypy-lang.org/)  
+[![PEP8](https://img.shields.io/badge/-PEP8-464646?style=flat&logo=Python&logoColor=56C0C0&color=008080)](https://peps.python.org/pep-0008/)  
+[![Swagger (OpenAPI)](https://img.shields.io/badge/-Swagger_(OpenAPI)-464646?style=flat&logo=OpenAPI%20Initiative&logoColor=56C0C0&color=008080)](https://swagger.io/specification/)
+
 
 ## 📌 Функциональность
 
@@ -23,7 +25,8 @@
 
 - **Регистрация** (`/auth/register`)  
   - Валидация логина и пароля  
-  - Хеширование пароля (`bcrypt`)  
+  - Хеширование пароля с помощью `werkzeug.security.generate_password_hash`  
+    (PBKDF2-SHA256, соль длиной 16 байт)   
   - Обработка ошибок (дубликаты, слабый пароль)  
   - Сохранение в БД  
 
