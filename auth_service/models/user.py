@@ -33,6 +33,7 @@ class User(UUIDMixin, CreatedAtMixin, Base):
         last_name: str
     ) -> None:
         self.login = login
+        # Хешируем пароль
         self.password = self.password = generate_password_hash(password)
         # self.password = bcrypt.hash(password)
         self.first_name = first_name

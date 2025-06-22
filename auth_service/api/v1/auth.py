@@ -1,13 +1,18 @@
-from fastapi import APIRouter, Depends, status, Request
+from uuid import uuid4
+from fastapi import APIRouter, Depends, Request, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import Redis
 
-from schemas.user import UserCreate, UserInDB, UserLoginRequest, TokenResponse
+from schemas.user import UserCreate, UserLoginRequest, UserInDB, TokenResponse
 from services.registration import AuthService
+from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
-from services.authentication import authenticate_user
+from db.redis_db import get_redis
 
 router = APIRouter()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 @router.post(
         '/register',
@@ -36,3 +41,17 @@ async def login(
 ):
     """Аутентификация пользователя. """
     return await authenticate_user(login_data, session, request)
+
+@router.post(
+    '/refresh',
+    response_model=TokenResponse,
+    summary='Обновление access-токена'
+)
+async def refresh_token(
+    token: str = Depends(oauth2_scheme),
+    redis: Redis = Depends(get_redis)
+) -> TokenResponse:
+    """
+    Обновление access-токена по refresh-токену.
+    """
+    return await handle_refresh_token(token, redis)
