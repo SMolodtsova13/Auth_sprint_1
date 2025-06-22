@@ -3,7 +3,6 @@ from fastapi.responses import ORJSONResponse
 
 from api.v1 import auth, roles
 from db import redis_db, postgres
-from api.v1 import access_token
 
 
 app = FastAPI(
