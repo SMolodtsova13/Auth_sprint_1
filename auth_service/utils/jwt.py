@@ -30,8 +30,15 @@ def create_access_token(
 
 def create_refresh_token(sub: str, jti: str) -> str:
     """Генерирует JWT refresh token с долгим сроком действия."""
-    expire = datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days)
-    to_encode = {'sub': sub, 'type': 'refresh', 'jti': jti, 'exp': expire}
+    expire = datetime.utcnow() + timedelta(
+        days=settings.refresh_token_expire_days
+    )
+    to_encode = {
+        'sub': sub,
+        'type': 'refresh',
+        'jti': jti,
+        'exp': expire
+    }
     return jwt.encode(
         to_encode,
         settings.jwt_secret,

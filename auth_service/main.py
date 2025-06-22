@@ -33,5 +33,4 @@ async def shutdown():
 
 # Подключение роутера авторизации
 app.include_router(auth.router, prefix='/auth', tags=['auth'])
-app.include_router(access_token.router, prefix='/auth', tags=['token'])
 app.include_router(roles.router, prefix='/api/v1')
