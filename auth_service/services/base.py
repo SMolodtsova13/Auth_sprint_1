@@ -6,11 +6,8 @@ from models import Base
 
 class BaseService:
     """Базовый сервис."""
-    def __init__(
-        self,
-        db: AsyncSession,
-        model: Base
-    ):
+
+    def __init__(self, db: AsyncSession, model: Base) -> None:
         self.db = db
         self.model = model
 
@@ -42,7 +39,7 @@ class BaseService:
     async def update(self, db_obj, obj):
         """Метод обновления объекта модели в БД."""
         update_data = obj.model_dump()
-        for field in db_obj.columns.keys():
+        for field in db_obj.__mapper__.attrs.keys():
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
         self.db.add(db_obj)
