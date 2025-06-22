@@ -20,7 +20,7 @@ app = FastAPI(
 async def startup():
     """Инициализация Redis при старте приложения."""
     redis_db.redis = redis_db.Redis(
-        host='localhost', port=6379, db=0, decode_responses=True
+        host='redis', port=6379, db=0, decode_responses=True
     )
 
 @app.on_event('shutdown')
