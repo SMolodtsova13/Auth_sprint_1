@@ -1,10 +1,9 @@
-from uuid import UUID
-
 from pydantic import BaseModel, constr
 
 from core.constants import (
     LOGIN_MAX_LENGTH, LOGIN_MIN_LENGTH, PASSWORD_MIN_LENGTH
 )
+from schemas.base import BaseUUID
 
 
 class BaseUser(BaseModel):
@@ -29,9 +28,9 @@ class SuperUserCreate(BaseModel):
     last_name: str
 
 
-class UserInDB(BaseModel):
+class UserInDB(BaseUUID):
     """Схема возвращаемых данных о пользователе."""
-    id: UUID
+
     first_name: str
     last_name: str
 
