@@ -1,7 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from passlib.hash import bcrypt
 
 from models.user import User
 from schemas.user import UserCreate
@@ -15,7 +14,10 @@ class AuthService:
     async def register_user(
         user_create: UserCreate, db: AsyncSession
     ) -> User:
-        """Регистрирует нового пользователя."""
+        """
+        Регистрирует нового пользователя.
+        Хеширование происходит в модели User.__init__.
+        """
         # Проверка дублирования/пароля
         result = await db.execute(
             select(User).where(User.login == user_create.login)
@@ -32,12 +34,11 @@ class AuthService:
                 detail='Пароль слишком простой (менее 6 символов).'
             )
 
-        # Хешируем пароль
-        hashed_password = bcrypt.hash(user_create.password)
+        # Передаём сырой пароль — модель хеширует
         # Создаём объект и сохраняем
         user = User(
             login=user_create.login,
-            password=hashed_password,
+            password=user_create.password,
             first_name=user_create.first_name,
             last_name=user_create.last_name,
         )
