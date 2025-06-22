@@ -71,6 +71,8 @@ def get_role_service(
 
 
 class UserRoleService:
+    """Сервис роли пользователя."""
+
     def __init__(self, db: AsyncSession):
         self.db = db
 

@@ -18,6 +18,7 @@ class RoleDto(RoleCreateDto, BaseUUID):
 
 
 class RoleOperation(BaseModel):
+    """Схема объекта роли пользователя."""
 
     user_id: UUID
     role_id: UUID

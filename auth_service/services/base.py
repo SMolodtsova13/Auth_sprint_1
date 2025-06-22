@@ -6,11 +6,8 @@ from models import Base
 
 class BaseService:
     """Базовый сервис."""
-    def __init__(
-        self,
-        db: AsyncSession,
-        model: Base
-    ) -> None:
+
+    def __init__(self, db: AsyncSession, model: Base) -> None:
         self.db = db
         self.model = model
 
