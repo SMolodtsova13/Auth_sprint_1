@@ -9,6 +9,7 @@ from core.constants import PASSWORD_MIN_LENGTH
 
 class AuthService:
     """Сервис для регистрации пользователей."""
+
     @staticmethod
     async def register_user(
         user_create: UserCreate, db: AsyncSession
