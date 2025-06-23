@@ -38,9 +38,6 @@ async def login(
     session: AsyncSession = Depends(get_session),
 ):
     """Аутентификация пользователя. """
-    d = request.headers.get('User-Agent', '')
-    print(type(d))
-    print(f'FFFFFFFGRTGGGGGGGGGGG - {d}')
     return await authenticate_user(login_data, session, request)
 
 
