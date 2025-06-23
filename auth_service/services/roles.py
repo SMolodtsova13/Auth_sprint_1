@@ -5,7 +5,6 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-
 from db.postgres import get_session
 from models.role import Role, UserRole
 from services.base import BaseService

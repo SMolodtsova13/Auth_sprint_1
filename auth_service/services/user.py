@@ -3,7 +3,6 @@ from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 from db.postgres import get_session
 from models.user import User, LoginHistory
 from services.base import BaseService
