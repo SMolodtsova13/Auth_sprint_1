@@ -1,3 +1,4 @@
+from auth_service.models.role import Role, UserRole
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -28,7 +29,7 @@ async def get_current_user(
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Недопустимый токен.'
+                detail='Недопустимый токен, не содержит id пользователя'
             )
     except JWTError:
         raise HTTPException(
@@ -44,4 +45,10 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Пользователь с данным токеном не найден.'
         )
+    # Получаем роли пользователя
+    roles_result = await db.execute(
+        select(Role.name).join(UserRole).where(UserRole.user_id == user.id)
+    )
+    user.roles = [row[0] for row in roles_result.all()]  # Добавим список ролей вручную
+
     return user
