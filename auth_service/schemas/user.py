@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, constr
 
 from core.constants import (
@@ -52,3 +54,13 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = 'bearer'
+
+
+class LoginHistoryDto(BaseModel):
+    """Схема истории входов пользователя."""
+
+    user_agent: str | None
+    login_at: datetime
+
+    class Config:
+        orm_mode = True

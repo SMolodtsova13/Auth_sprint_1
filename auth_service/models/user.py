@@ -17,13 +17,16 @@ class User(UUIDMixin, CreatedAtMixin, Base):
 
     __tablename__ = 'users'
 
-
     login = Column(String(LOGIN_MAX_LENGTH), unique=True, nullable=False)
     password = Column(String(PASSWORD_MAX_LENGTH), nullable=False)
     first_name = Column(String(NAME_MAX_LENGTH))
     last_name = Column(String(NAME_MAX_LENGTH))
-    login_history = relationship('LoginHistory', back_populates='user')
-    roles = relationship('UserRole', back_populates='user')
+    login_history = relationship(
+        'LoginHistory',
+        back_populates='user',
+        lazy='selectin'
+    )
+    roles = relationship('UserRole', back_populates='user', lazy="selectin")
 
     def __init__(
         self,
@@ -53,6 +56,10 @@ class LoginHistory(UUIDMixin, Base):
     __tablename__ = 'login_history'
 
     user_id = Column(UUID, ForeignKey('users.id'))
-    user = relationship('User', back_populates='login_history')
+    user = relationship(
+        'User',
+        back_populates='login_history',
+        lazy='selectin'
+    )
     user_agent = Column(String(USER_AGENT_MAX_LENGTH))
     login_at = Column(DateTime, nullable=False)
