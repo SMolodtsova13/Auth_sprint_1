@@ -11,6 +11,10 @@ async_session = sessionmaker(
 
 
 async def get_session() -> AsyncSession:
+    """
+    Асинхронная зависимость для получения сессии к базе данных.
+    Используется во всех endpoint'ах и сервисах, где требуется доступ к БД.
+    """
     async with async_session() as session:
         try:
             yield session
