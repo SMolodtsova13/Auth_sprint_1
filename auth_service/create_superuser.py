@@ -5,9 +5,10 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.postgres import async_session
-from models import User, Role, UserRole
+from models.role import Role, UserRole
+from models.user import User
 from schemas.user import SuperUserCreate
-from schemas.role import RoleCreate
+from schemas.role import RoleCreateDto
 from services.base import BaseService
 
 
@@ -37,9 +38,11 @@ async def _create_user(db: AsyncSession, login, password):
     return await service.create(user_obj)
 
 
-async def _create_role(db: AsyncSession):
+async def _get_or_create_role(db: AsyncSession):
     service = BaseService(db, Role)
-    obj = RoleCreate(name='superuser')
+    obj = RoleCreateDto(name='superuser')
+    if db_obj := await service.get_by_kwargs(name=obj.name):
+        return db_obj[0]
     return await service.create(obj)
 
 
@@ -63,7 +66,7 @@ async def _create():
             raise typer.Exit(code=1)
         try:
             db_user_obj = await _create_user(session, login, password)
-            db_role_obj = await _create_role(session)
+            db_role_obj = await _get_or_create_role(session)
             await _create_user_role(session, db_user_obj, db_role_obj)
             typer.echo('Суперпользователь успешно создан')
         except Exception as err:
