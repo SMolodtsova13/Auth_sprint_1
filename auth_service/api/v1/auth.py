@@ -4,11 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
 from models.user import User
-from services.dependencies import get_current_user
 from schemas.user import (
     UserCreate, UserLoginRequest, UserInDB,
     TokenResponse, ChangeCredentialsRequest
 )
+from services.user import get_current_user
 from services.registration import AuthService
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
