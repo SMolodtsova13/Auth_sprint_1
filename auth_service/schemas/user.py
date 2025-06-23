@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, constr, root_validator
 
 from core.constants import (
@@ -82,3 +84,13 @@ class ChangeCredentialsRequest(BaseModel):
         if not values.get('new_login') and not values.get('new_password'):
             raise ValueError('Укажите новый логин или новый пароль')
         return values
+
+ 
+class LoginHistoryDto(BaseModel):
+    """Схема истории входов пользователя."""
+
+    user_agent: str | None
+    login_at: datetime
+
+    class Config:
+        orm_mode = True

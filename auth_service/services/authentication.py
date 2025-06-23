@@ -52,7 +52,7 @@ async def authenticate_user(
 
     login_rec = LoginHistory(
         user_id=user.id,
-        user_agent=request.headers.get('User-Agent', ''),
+        user_agent=str(request.headers.get('User-Agent', '')),
         login_at=datetime.utcnow()
     )
     db.add(login_rec)
