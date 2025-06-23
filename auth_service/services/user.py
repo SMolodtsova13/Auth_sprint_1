@@ -17,8 +17,6 @@ class UserService(BaseService):
         self, request_user: User
     ) -> list[LoginHistory]:
         """Получение истории входов пользователя."""
-        print(request_user.login_history)
-        print(type(request_user.login_history))
         return request_user.login_history
 
 
