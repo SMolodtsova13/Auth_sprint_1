@@ -2,8 +2,12 @@ from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 
 from core.config import settings
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
 def create_access_token(

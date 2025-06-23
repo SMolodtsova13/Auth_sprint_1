@@ -1,8 +1,7 @@
 from functools import lru_cache
-from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -21,7 +20,7 @@ class RoleService(BaseService):
         role_obj = await self.get_by_id(obj_id)
         if not role_obj:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail='Объект не найден.'
             )
         return role_obj
@@ -30,7 +29,7 @@ class RoleService(BaseService):
         """Проверка сущестования роли по названию."""
         if await self.get_by_kwargs(name=name):
             raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'Роль {name} - уже существует.'
             )
 
@@ -38,7 +37,7 @@ class RoleService(BaseService):
         """Проверка защищенных от удаления ролей."""
         if obj.name == 'superuser':
             raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Роль superuser защищена от удаления.'
             )
 
@@ -64,9 +63,7 @@ class RoleService(BaseService):
 
 
 @lru_cache()
-def get_role_service(
-    db: AsyncSession = Depends(get_session)
-) -> RoleService:
+def get_role_service(db: AsyncSession = Depends(get_session)) -> RoleService:
     return RoleService(db, Role)
 
 
@@ -92,11 +89,15 @@ class UserRoleService:
         )
         return bool(user_role.scalar_one_or_none())
 
-    async def assign_role(self, role_operation: RoleOperation, current_user_id: UUID) -> UserRole:
+    async def assign_role(
+        self,
+        role_operation: RoleOperation,
+        current_user_id: UUID
+    ) -> UserRole:
         # Проверяем права администратора
         if not await self._is_admin(current_user_id):
             raise HTTPException(
-                status_code=HTTPStatus.FORBIDDEN,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail='Только администраторы могут назначать роли'
             )
         # Проверяем существование пользователя и роли
@@ -112,7 +113,7 @@ class UserRoleService:
         )
         if existing_role.scalar_one_or_none():
             raise HTTPException(
-                status_code=HTTPStatus.CONFLICT,
+                status_code=status.HTTP_409_CONFLICT,
                 detail='Роль уже назначена пользователю'
             )
 
@@ -123,11 +124,15 @@ class UserRoleService:
         await self.db.refresh(user_role)
         return user_role
 
-    async def remove_role(self, role_operation: RoleOperation, current_user_id: UUID) -> None:
+    async def remove_role(
+        self,
+        role_operation: RoleOperation,
+        current_user_id: UUID
+    ) -> None:
         # Проверяем права администратора
         if not await self._is_admin(current_user_id):
             raise HTTPException(
-                status_code=HTTPStatus.FORBIDDEN,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail='Только администраторы могут удалять роли'
             )
         # Проверяем существование связи пользователь-роль
@@ -140,7 +145,7 @@ class UserRoleService:
         user_role = user_role.scalar_one_or_none()
         if not user_role:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail='Роль не назначена пользователю'
             )
 

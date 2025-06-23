@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
@@ -8,10 +7,10 @@ from services.registration import AuthService
 from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
 from db.redis_db import get_redis
+from utils.jwt import oauth2_scheme
 
-router = APIRouter()
+router = APIRouter(prefix='/auth', tags=['auth'])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 @router.post(
         '/register',
@@ -39,7 +38,11 @@ async def login(
     session: AsyncSession = Depends(get_session),
 ):
     """Аутентификация пользователя. """
+    d = request.headers.get('User-Agent', '')
+    print(type(d))
+    print(f'FFFFFFFGRTGGGGGGGGGGG - {d}')
     return await authenticate_user(login_data, session, request)
+
 
 @router.post(
     '/refresh',
