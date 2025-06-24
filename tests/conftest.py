@@ -8,6 +8,7 @@ from models.role import Role, UserRole
 from services.base import BaseService,  SuperUserCreate
 from models.user import User
 from testdata.test_model import UserData
+from tests.testdata.factories import generate_user_data
 
 
 @pytest_asyncio.fixture(scope='session')
@@ -95,3 +96,8 @@ async def get_access_token(make_post_request, get_superuser_data) -> str:
     }
     response = await make_post_request('/api/v1/auth/login', login_data)
     return response.json()['access_token']
+
+@pytest_asyncio.fixture
+def new_user_data():
+    """Фикстура для генерации уникального пользователя."""
+    return generate_user_data()
