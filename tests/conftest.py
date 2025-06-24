@@ -8,6 +8,7 @@ from models.role import Role, UserRole
 from services.base import BaseService,  SuperUserCreate
 from models.user import User
 from testdata.test_model import UserData
+from tests.functional.src.constants import LOGIN_URL
 from tests.testdata.factories import generate_user_data
 
 
@@ -94,8 +95,9 @@ async def get_access_token(make_post_request, get_superuser_data) -> str:
         'login': get_superuser_data['login'],
         'password': get_superuser_data['password']
     }
-    response = await make_post_request('/api/v1/auth/login', login_data)
+    response = await make_post_request(LOGIN_URL, login_data)
     return response.json()['access_token']
+
 
 @pytest_asyncio.fixture
 def new_user_data():
