@@ -1,9 +1,10 @@
 import pytest
 from http import HTTPStatus
 
-from tests.functional.src.constants import CHANGE_CREDENTIALS_URL, LOGIN_URL, REFRESH_URL, REGISTER_URL
-
-# from tests.constants import REGISTER_URL, LOGIN_URL, REFRESH_URL, CHANGE_CREDENTIALS_URL
+from tests.functional.src.constants import (
+    CHANGE_CREDENTIALS_URL, LOGIN_URL,
+    REFRESH_URL, REGISTER_URL
+)
 
 
 @pytest.mark.asyncio
@@ -42,7 +43,10 @@ async def test_token_refresh(make_post_request, new_user_data):
     tokens = await login_response.json()
 
     refresh_token = tokens['refresh_token']
-    response = await make_post_request(REFRESH_URL, {'refresh_token': refresh_token})
+    response = await make_post_request(
+        REFRESH_URL,
+        {'refresh_token': refresh_token}
+    )
     assert response.status == HTTPStatus.OK
 
 
