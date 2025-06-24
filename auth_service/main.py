@@ -24,32 +24,22 @@ def custom_openapi():
         description='Документация авторизации',
         routes=app.routes,
     )
-
-    # Определяем apiKey-схему
+    # Определяем OAuth2 схему с tokenUrl и refreshUrl
     openapi_schema.setdefault('components', {})['securitySchemes'] = {
-        'BearerAuth': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization',
-            'description': 'Введите: Bearer <JWT токен>',
+        'OAuth2PasswordBearer': {
+            'type': 'oauth2',
+            'flows': {
+                'password': {
+                    'tokenUrl': '/api/v1/auth/login',
+                    'refreshUrl': '/api/v1/auth/refresh',
+                    'scopes': {},
+                }
+            }
         }
     }
-
-    # Применим только к нужным операциям
-    secure_ops = {
-        '/auth/refresh': ['post'],
-        '/auth/me/change': ['post'],
-        '/auth/login-history': ['get'],
-    }
-    
-    for path, methods in secure_ops.items():
-        if path in openapi_schema['paths']:
-            for m in methods:
-                if m in openapi_schema['paths'][path]:
-                    openapi_schema['paths'][path][m]['security'] = [{'BearerAuth': []}]
-
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+
 
 app.openapi = custom_openapi
 

@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Security, Request
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, OAuth2PasswordRequestForm
 from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
@@ -15,16 +15,16 @@ from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
 from db.redis_db import get_redis
+from utils.jwt import oauth2_scheme
 
-
-api_key_header = APIKeyHeader(name='Authorization', scheme_name='BearerAuth')
+# api_key_header = APIKeyHeader(name='Authorization', scheme_name='BearerAuth')
 security = HTTPBearer()
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 
 @router.post(
-        '/register',
+        '//me/change'',
         response_model=UserInDB,
         status_code=status.HTTP_201_CREATED,
         summary='Регистрация пользователя'
@@ -38,17 +38,22 @@ async def register_user(
 
 
 @router.post(
-        '/login',
-        response_model=TokenResponse,
-        status_code=status.HTTP_200_OK,
-        summary='Аутентификация пользователя'
+    '/login',
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    summary='Аутентификация пользователя'
 )
 async def login(
-    login_data: UserLoginRequest,
+    # login_data: UserLoginRequest,
     request: Request,
     session: AsyncSession = Depends(get_session),
+    form_data: OAuth2PasswordRequestForm = Depends(),
 ):
     """Аутентификация пользователя. """
+    login_data = UserLoginRequest(
+        login=form_data.username,
+        password=form_data.password
+    )
     return await authenticate_user(login_data, session, request)
 
 
@@ -58,19 +63,11 @@ async def login(
     summary='Обновление access-токена'
 )
 async def refresh_token(
-    authorization: str = Security(api_key_header),
+    token: str = Depends(oauth2_scheme),
     redis: Redis = Depends(get_redis),
 ) -> TokenResponse:
-    """
-    Обновление access-токена по refresh-токену.
-    """
-    if not authorization.startswith('Bearer '):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Неправильный формат авторизации'
-        )
-    raw_refresh = authorization.split(' ', 1)[1]
-    return await handle_refresh_token(raw_refresh, redis)
+    """Обновление access-токена по refresh-токену."""
+    return await handle_refresh_token(token, redis)
 
 
 @router.post(
