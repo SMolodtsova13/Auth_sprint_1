@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from core.config import settings
@@ -49,6 +49,10 @@ def create_refresh_token(sub: str, jti: str) -> str:
         settings.jwt_secret,
         algorithm=settings.jwt_algorithm
     )
+
+
+async def get_refresh_token(token: str = Depends(oauth2_scheme)) -> str:
+    return token
 
 
 def decode_jwt(
