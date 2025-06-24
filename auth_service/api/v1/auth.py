@@ -24,7 +24,7 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 
 
 @router.post(
-        '//me/change'',
+        '/register',
         response_model=UserInDB,
         status_code=status.HTTP_201_CREATED,
         summary='Регистрация пользователя'
