@@ -78,9 +78,7 @@ class ChangeCredentialsRequest(BaseModel):
 
     @model_validator(mode='after')
     def at_least_one_field(self):
-        """
-        Проверка, что указан новый логин или новый пароль.
-        """
+        """Проверка, что указан новый логин или новый пароль."""
         if not self.new_login and not self.new_password:
             raise ValueError('Укажите новый логин или новый пароль')
         return self

@@ -24,10 +24,10 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 
 
 @router.post(
-        '/register',
-        response_model=UserInDB,
-        status_code=status.HTTP_201_CREATED,
-        summary='Регистрация пользователя'
+    '/register',
+    response_model=UserInDB,
+    status_code=status.HTTP_201_CREATED,
+    summary='Регистрация пользователя'
 )
 async def register_user(
     user_create: UserCreate,

@@ -89,10 +89,7 @@ async def handle_refresh_token(token: str, redis: Redis) -> TokenResponse:
     # Генерируем новые токены
     new_jti = str(uuid4())
     new_refresh_token = create_refresh_token(sub=user_id, jti=new_jti)
-    new_access_token = create_access_token(
-        sub=user_id
-        # roles=payload.get('roles', [])
-    )
+    new_access_token = create_access_token(sub=user_id)
 
     # Сохраняем новый refresh-токен
     new_key = f'refresh:{user_id}:{new_jti}'
