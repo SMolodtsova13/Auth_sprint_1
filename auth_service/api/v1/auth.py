@@ -1,6 +1,7 @@
-from fastapi import Depends, APIRouter, HTTPException, status, Security, Request
-from fastapi.security import HTTPBearer, OAuth2PasswordRequestForm
-from fastapi.security.api_key import APIKeyHeader
+from fastapi import Depends, APIRouter, status, Request
+from fastapi.security import (
+    HTTPBearer, OAuth2PasswordRequestForm, HTTPAuthorizationCredentials
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
@@ -13,12 +14,12 @@ from services.user import get_current_user
 from services.registration import AuthService
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
+# from utils.jwt import create_jwt_pair_response
 from db.postgres import get_session
 from db.redis_db import get_redis
-from utils.jwt import oauth2_scheme
 
-# api_key_header = APIKeyHeader(name='Authorization', scheme_name='BearerAuth')
-security = HTTPBearer()
+
+refresh_scheme = HTTPBearer()
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -63,11 +64,22 @@ async def login(
     summary='Обновление access-токена'
 )
 async def refresh_token(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(refresh_scheme),
     redis: Redis = Depends(get_redis),
 ) -> TokenResponse:
     """Обновление access-токена по refresh-токену."""
+    token = credentials.credentials
     return await handle_refresh_token(token, redis)
+
+
+# @router.post('/refresh', response_model=TokenResponse)
+# async def refresh_tokens(
+#     user: User = Depends(lambda: get_current_user(token_type='refresh')),
+# ) -> TokenResponse:
+#     """
+#     Обновляет access и refresh токены. В заголовке Authorization должен быть refresh токен.
+#     """
+#     return create_jwt_pair_response(user_id=str(user.id))
 
 
 @router.post(
