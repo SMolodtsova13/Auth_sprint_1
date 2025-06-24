@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from models.user import LoginHistory, User
 from schemas.user import UserLoginRequest, TokenResponse
-from db.redis_db import get_redis
+from auth_service.db.cache import get_cache_storage
 from core.config import settings
 from utils.jwt import (
     create_access_token, create_refresh_token, decode_jwt
@@ -42,7 +42,7 @@ async def authenticate_user(
     )
     refresh_token = create_refresh_token(sub=user_id, jti=jti)
 
-    redis = await get_redis()
+    redis = await get_cache_storage()
     key = f'refresh:{user_id}:{jti}'
     await redis.set(
         key,

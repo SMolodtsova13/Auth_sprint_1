@@ -12,7 +12,7 @@ from services.registration import AuthService
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
-from db.redis_db import get_redis
+from db.cache import get_cache_storage
 from utils.jwt import oauth2_scheme
 
 router = APIRouter(prefix='/auth', tags=['auth'])
@@ -54,7 +54,7 @@ async def login(
 )
 async def refresh_token(
     token: str = Depends(oauth2_scheme),
-    redis: Redis = Depends(get_redis)
+    redis: Redis = Depends(get_cache_storage)
 ) -> TokenResponse:
     """
     Обновление access-токена по refresh-токену.

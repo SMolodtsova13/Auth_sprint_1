@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
+    project_name: str = 'Auth Service'
+
     # PostgreSQL
     postgres_user: str = 'postgres'
     postgres_password: str = 'postgres'
