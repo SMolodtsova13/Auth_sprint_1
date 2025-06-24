@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
-from fastapi import HTTPException, status, Depends
+
+from fastapi import HTTPException, status, Depends, Header
 from fastapi.security import OAuth2PasswordBearer
 
 from core.config import settings
@@ -14,7 +15,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login')
 
 def create_access_token(
     sub: str,
-    # roles: list[str] = None
 ) -> str:
     """
     Генерирует JWT access token с коротким сроком действия.
@@ -25,7 +25,6 @@ def create_access_token(
     to_encode = {
         'sub': sub,
         'type': 'access',
-        # 'roles': roles or [],
         'exp': expire
     }
     return jwt.encode(
@@ -53,10 +52,6 @@ def create_refresh_token(sub: str, jti: str) -> str:
     )
 
 
-async def get_refresh_token(token: str = Depends(oauth2_scheme)) -> str:
-    return token
-
-
 def decode_jwt(
     token: str,
     verify_exp: bool = True,
@@ -81,18 +76,3 @@ def decode_jwt(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Невалидный токен'
         )
-
-
-# def create_jwt_pair_response(user_id: str) -> TokenResponse:
-#     """
-#     Генерирует пару access/refresh токенов для пользователя.
-#     """
-#     refresh_jti = str(uuid.uuid4())
-#     access_token = create_access_token(sub=user_id)
-#     refresh_token = create_refresh_token(sub=user_id, jti=refresh_jti)
-
-#     return TokenResponse(
-#         access_token=access_token,
-#         refresh_token=refresh_token,
-#         token_type='bearer'
-#     )

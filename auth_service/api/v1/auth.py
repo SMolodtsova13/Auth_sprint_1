@@ -14,7 +14,6 @@ from services.user import get_current_user
 from services.registration import AuthService
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
-# from utils.jwt import create_jwt_pair_response
 from db.postgres import get_session
 from db.redis_db import get_redis
 
@@ -70,16 +69,6 @@ async def refresh_token(
     """Обновление access-токена по refresh-токену."""
     token = credentials.credentials
     return await handle_refresh_token(token, redis)
-
-
-# @router.post('/refresh', response_model=TokenResponse)
-# async def refresh_tokens(
-#     user: User = Depends(lambda: get_current_user(token_type='refresh')),
-# ) -> TokenResponse:
-#     """
-#     Обновляет access и refresh токены. В заголовке Authorization должен быть refresh токен.
-#     """
-#     return create_jwt_pair_response(user_id=str(user.id))
 
 
 @router.post(
