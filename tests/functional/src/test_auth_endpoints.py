@@ -82,13 +82,16 @@ class TestTokenRefresh:
         refresh_token = tokens['refresh_token']
         response = await make_post_request(
             REFRESH_URL,
-            {'refresh_token': refresh_token}
+            {},
+            headers={'Authorization': f'Bearer {refresh_token}'}
         )
         assert response.status == HTTPStatus.OK
 
     async def test_refresh_with_invalid_token(self, make_post_request):
         response = await make_post_request(
-            REFRESH_URL, {'refresh_token': 'invalidtoken'}
+            REFRESH_URL,
+            {},
+            headers={'Authorization': 'Bearer invalidtoken'}
         )
         assert response.status == HTTPStatus.UNAUTHORIZED  # 401
 
