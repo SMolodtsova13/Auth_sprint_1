@@ -44,7 +44,6 @@ async def register_user(
     summary='Аутентификация пользователя'
 )
 async def login(
-    # login_data: UserLoginRequest,
     request: Request,
     session: AsyncSession = Depends(get_session),
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -60,13 +59,16 @@ async def login(
 @router.post(
     '/refresh',
     response_model=TokenResponse,
-    summary='Обновление access-токена'
+    summary='Обновление токенов'
 )
 async def refresh_token(
     credentials: HTTPAuthorizationCredentials = Depends(refresh_scheme),
     redis: Redis = Depends(get_redis),
 ) -> TokenResponse:
-    """Обновление access-токена по refresh-токену."""
+    """
+    Принимает refresh-токен в Authorization: Bearer <token>.
+    Возвращает новую пару токенов для того же device_id.
+    """
     token = credentials.credentials
     return await handle_refresh_token(token, redis)
 
