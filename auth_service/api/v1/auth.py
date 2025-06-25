@@ -62,6 +62,7 @@ async def login(
     summary='Обновление токенов'
 )
 async def refresh_token(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(refresh_scheme),
     redis: Redis = Depends(get_cache_storage),
 ) -> TokenResponse:
@@ -70,7 +71,7 @@ async def refresh_token(
     Возвращает новую пару токенов для того же device_id.
     """
     token = credentials.credentials
-    return await handle_refresh_token(token, redis)
+    return await handle_refresh_token(token, redis, request)
 
 
 @router.post(

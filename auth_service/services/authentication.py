@@ -65,7 +65,9 @@ async def authenticate_user(
     )
 
 
-async def handle_refresh_token(token: str, redis: Redis, request: Request) -> TokenResponse:
+async def handle_refresh_token(
+    token: str, redis: Redis, request: Request
+) -> TokenResponse:
     """Выполняет валидацию refresh-токена, обновляет пару токенов."""
     # Проверяем токен
     payload = decode_jwt(token, verify_exp=True, token_type='refresh')
@@ -78,11 +80,13 @@ async def handle_refresh_token(token: str, redis: Redis, request: Request) -> To
             detail='Невалидный токен'
         )
 
+    user_agent = str(request.headers.get('User-Agent', ''))
+
     # Проверяем наличие в Redis
-    key = f'refresh:{user_id}:{device_id}'
+    key = f'refresh:{user_id}:{user_agent}'
     stored_token = await redis.get(key)
 
-    if stored_token != token:
+    if stored_token.decode('utf-8') != token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Refresh-токен недействителен или уже отозван'
@@ -96,7 +100,6 @@ async def handle_refresh_token(token: str, redis: Redis, request: Request) -> To
     new_refresh_token = create_refresh_token(sub=user_id, device_id=new_device_id)
     new_access_token = create_access_token(sub=user_id, device_id=new_device_id)
 
-    user_agent = str(request.headers.get('User-Agent', ''))
     # Сохраняем новый refresh-токен
     new_key = f'refresh:{user_id}:{user_agent}'
     await redis.set(
