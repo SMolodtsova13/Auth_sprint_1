@@ -8,7 +8,7 @@ from schemas.user import (
     TokenResponse, ChangeCredentialsRequest
 )
 from services.user import get_current_user
-from services.registration import AuthService
+from services.registration import AuthService, get_auth_service
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
@@ -26,10 +26,10 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 )
 async def register_user(
     user_create: UserCreate,
-    db: AsyncSession = Depends(get_session)
+    auth_service: AuthService = Depends(get_auth_service)
 ):
     """Регистрирует нового пользователя."""
-    return await AuthService.register_user(user_create, db)
+    return await auth_service.register_user(user_create)
 
 
 @router.post(
@@ -60,6 +60,7 @@ async def refresh_token(
     Обновление access-токена по refresh-токену.
     """
     return await handle_refresh_token(token, redis)
+
 
 @router.post(
     '/me/change',

@@ -12,6 +12,10 @@ class CacheStorage(ABC):
         pass
 
     @abstractmethod
+    def delete(*args, **kwargs):
+        pass
+
+    @abstractmethod
     def close(*args, **kwargs):
         pass
 
