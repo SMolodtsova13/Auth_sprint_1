@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, constr, root_validator
+from pydantic import BaseModel, constr, model_validator
 
 from core.constants import (
     LOGIN_MAX_LENGTH, LOGIN_MIN_LENGTH,
@@ -76,14 +76,12 @@ class ChangeCredentialsRequest(BaseModel):
         max_length=PASSWORD_MAX_LENGTH
     )
 
-    @root_validator
-    def at_least_one_field(cls, values):
-        """
-        Проверка, что указан новый логин или новый пароль.
-        """
-        if not values.get('new_login') and not values.get('new_password'):
+    @model_validator(mode='after')
+    def at_least_one_field(self):
+        """Проверка, что указан новый логин или новый пароль."""
+        if not self.new_login and not self.new_password:
             raise ValueError('Укажите новый логин или новый пароль')
-        return values
+        return self
 
  
 class LoginHistoryDto(BaseModel):

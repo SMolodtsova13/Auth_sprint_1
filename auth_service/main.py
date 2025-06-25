@@ -6,14 +6,11 @@ from db import redis_db
 
 
 app = FastAPI(
-    # title=settings.project_name,
     title='Auth Service',
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
-    # lifespan=lifespan
 )
-
 
 @app.on_event('startup')
 async def startup():
@@ -31,5 +28,4 @@ async def shutdown():
     await redis_db.redis.close()
 
 
-# Подключение роутера авторизации
 app.include_router(router)
