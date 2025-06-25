@@ -18,7 +18,7 @@ class AuthService(BaseService):
         Регистрирует нового пользователя.
         Хеширование происходит в модели User.__init__.
         """
-        if await self.get_by_kwargs(login=user_create.login):
+        if await self.db.get_by_kwargs(login=user_create.login):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail='Пользователь с таким логином уже существует.'
@@ -29,7 +29,7 @@ class AuthService(BaseService):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Пароль слишком простой (менее 6 символов).'
             )
-        return await self.create(user_create)
+        return await self.db.create(user_create)
 
 
 @lru_cache()

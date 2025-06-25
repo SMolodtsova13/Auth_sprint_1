@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, Request
+from fastapi.security import HTTPAuthorizationCredentials
 
 from schemas.user import LoginHistoryDto
 from services.user import UserService, get_user_service, get_current_user
 from models.user import User
-from utils.jwt import oauth2_scheme
+from utils.jwt import scheme
 
 router = APIRouter(prefix='/user', tags=['user'])
 
@@ -28,10 +29,11 @@ async def get_user_login_history(
     summary='Выход пользователя из аккаунта'
 )
 async def logout_user(
+    request: Request,
     response: Response,
-    token: str = Depends(oauth2_scheme),
+    token: HTTPAuthorizationCredentials = Depends(scheme),
     user: User = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
-):
+) -> None:
     """Выход пользователя из аккаунта."""
-    return await user_service.logout_user(user, token, response)
+    await user_service.logout_user(user, token.credentials, request, response)

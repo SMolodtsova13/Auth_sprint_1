@@ -16,19 +16,9 @@ from utils.role import permission_required
 class RoleService(BaseService):
     """Сервис ролей."""
 
-    async def _get_role(self, obj_id: UUID) -> Role:
-        """Получение объекта роли."""
-        role_obj = await self.get_by_id(obj_id)
-        if not role_obj:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='Объект не найден.'
-            )
-        return role_obj
-
     async def _check_role_name(self, name: str) -> None:
         """Проверка сущестования роли по названию."""
-        if await self.get_by_kwargs(name=name):
+        if await self.db.get_by_kwargs(name=name):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'Роль {name} - уже существует.'
@@ -42,25 +32,33 @@ class RoleService(BaseService):
                 detail='Роль superuser защищена от удаления.'
             )
 
-    async def create_role(self, request_obj: RoleDto) -> Role:
+    @permission_required('superuser')
+    async def create_role(
+        self, request_obj: RoleDto, current_user: User
+    ) -> Role:
         """Создание объекта роли."""
         await self._check_role_name(name=request_obj.name)
-        return await self.create(request_obj)
+        return await self.db.create(request_obj)
 
-    async def update_role(self, request_obj: RoleDto, role_id: UUID) -> Role:
+    @permission_required('superuser')
+    async def update_role(
+        self, request_obj: RoleDto, role_id: UUID, current_user: User
+    ) -> Role:
         """Обновление объекта роли."""
-        role_obj = await self._get_role(role_id)
-        return await self.update(role_obj, request_obj)
+        role_obj = await self.get_obj_or_404(role_id)
+        return await self.db.update(role_obj, request_obj)
 
-    async def delete_role(self, role_id: UUID) -> None:
+    @permission_required('superuser')
+    async def delete_role(self, role_id: UUID, current_user: User) -> None:
         """Удаление объекта роли."""
-        role_obj = await self._get_role(role_id)
+        role_obj = await self.get_obj_or_404(role_id)
         await self._check_protected_role(role_obj)
-        return await self.delete(role_obj)
+        return await self.db.delete(role_obj)
 
-    async def get_roles_list(self) -> list[Role]:
+    @permission_required('superuser')
+    async def get_roles_list(self, current_user: User) -> list[Role]:
         """Получение списка существующих ролей."""
-        return await self.get_all()
+        return await self.db.get_all()
 
 
 @lru_cache()
@@ -74,7 +72,9 @@ class UserRoleService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def has_permission(self, user_id: UUID, permission_name: str) -> bool:
+    """async def has_permission(
+        self, user_id: UUID, permission_name: str
+    ) -> bool:
         result = await self.db.execute(
             select(User)
             .join(UserRole)
@@ -84,7 +84,7 @@ class UserRoleService:
                 Role.name == permission_name
             )
         )
-        return bool(result.scalar_one_or_none())
+        return bool(result.scalar_one_or_none())"""
 
     async def _get_user(self, user_id: UUID) -> User:
         """Получает пользователя по id."""
@@ -94,7 +94,7 @@ class UserRoleService:
         user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail='Пользователь не найден'
             )
         return user
@@ -107,13 +107,13 @@ class UserRoleService:
         role = result.scalar_one_or_none()
         if not role:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail='Роль не найдена'
             )
         return role
 
-    @permission_required("admin")
-    async def assign_role(self, role_operation: RoleOperation, current_user_id: UUID) -> UserRole:
+    @permission_required('superuser')
+    async def assign_role(self, role_operation: RoleOperation, current_user: User) -> UserRole:
         """Назначение роли"""
         user = await self._get_user(role_operation.user_id)
         role = await self._get_role(role_operation.role_id)
@@ -134,8 +134,10 @@ class UserRoleService:
         await self.db.refresh(user_role)
         return user_role
 
-    @permission_required("admin")
-    async def remove_role(self, role_operation: RoleOperation, current_user_id: UUID) -> None:
+    @permission_required('superuser')
+    async def remove_role(
+        self, role_operation: RoleOperation, current_user: User
+    ) -> None:
         """Удаление роли"""
         user_role = await self.db.execute(
             select(UserRole).where(
