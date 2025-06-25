@@ -20,7 +20,10 @@ async def authenticate_user(
     db: AsyncSession,
     request: Request
 ) -> TokenResponse:
-    """Аутентифицирует пользователя по логину и паролю."""
+    """
+    Аутентифицирует пользователя по логину и паролю.
+    Создаёт пару токенов для нового устройства.
+    """
     result = await db.execute(select(User).where(User.login == data.login))
     user = result.scalars().first()
 
@@ -31,28 +34,24 @@ async def authenticate_user(
         )
 
     user_id = str(user.id)
-    jti = str(uuid4())
+    # Генерация уникального device_id для сессии
+    device_id = str(uuid4())
 
-    # Получаем роли пользователя
-    # roles = [role.name for role in user.roles]
+    access_token = create_access_token(sub=user_id, device_id=device_id)
+    refresh_token = create_refresh_token(sub=user_id, device_id=device_id)
 
-    access_token = create_access_token(
-        sub=user_id,
-        # roles=roles
-    )
-    refresh_token = create_refresh_token(sub=user_id, jti=jti)
-
-    redis = await get_redis()
-    key = f'refresh:{user_id}:{jti}'
+    redis: Redis = await get_redis()
+    key = f'refresh:{user_id}:{device_id}'
     await redis.set(
         key,
         refresh_token,
         ex=settings.refresh_token_expire_days * 24 * 3600
     )
 
+    # Сохраняем историю входа
     login_rec = LoginHistory(
         user_id=user.id,
-        user_agent=request.headers.get('User-Agent', ''),
+        user_agent=str(request.headers.get('User-Agent', '')),
         login_at=datetime.utcnow()
     )
     db.add(login_rec)
@@ -65,22 +64,20 @@ async def authenticate_user(
 
 
 async def handle_refresh_token(token: str, redis: Redis) -> TokenResponse:
-    """
-    Выполняет валидацию refresh-токена и генерирует новый access и refresh токены.
-    """
+    """Выполняет валидацию refresh-токена, обновляет пару токенов."""
     # Проверяем токен
     payload = decode_jwt(token, verify_exp=True, token_type='refresh')
     user_id = payload.get('sub')
-    jti = payload.get('jti')
+    device_id = payload.get('device_id')
 
-    if not user_id or not jti:
+    if not user_id or not device_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Невалидный токен'
         )
 
     # Проверяем наличие в Redis
-    key = f'refresh:{user_id}:{jti}'
+    key = f'refresh:{user_id}:{device_id}'
     stored_token = await redis.get(key)
 
     if stored_token != token:
@@ -89,19 +86,16 @@ async def handle_refresh_token(token: str, redis: Redis) -> TokenResponse:
             detail='Refresh-токен недействителен или уже отозван'
         )
 
-    # Удаляем старый refresh
+    # Удаляем старый refresh-токен
     await redis.delete(key)
 
-    # Генерируем новые токены
-    new_jti = str(uuid4())
-    new_refresh_token = create_refresh_token(sub=user_id, jti=new_jti)
-    new_access_token = create_access_token(
-        sub=user_id
-        # roles=payload.get('roles', [])
-    )
+    # Генерируем новую пару токенов с новым device_id
+    new_device_id = str(uuid4())
+    new_refresh_token = create_refresh_token(sub=user_id, device_id=new_device_id)
+    new_access_token = create_access_token(sub=user_id, device_id=new_device_id)
 
     # Сохраняем новый refresh-токен
-    new_key = f'refresh:{user_id}:{new_jti}'
+    new_key = f'refresh:{user_id}:{new_device_id}'
     await redis.set(
         new_key,
         new_refresh_token,
