@@ -9,6 +9,8 @@ from db.postgres import get_session
 from models.role import Role, UserRole
 from services.base import BaseService
 from schemas.role import RoleOperation, RoleDto
+from models.user import User
+from utils.role import permission_required
 
 
 class RoleService(BaseService):
@@ -72,38 +74,49 @@ class UserRoleService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def _is_admin(self, user_id: UUID) -> bool:
-        """Проверяет, является ли пользователь администратором."""
-        admin_role = await self.db.execute(
-            select(Role).where(Role.name == 'admin')
-        )
-        admin_role = admin_role.scalar_one_or_none()
-        if not admin_role:
-            return False
-        user_role = await self.db.execute(
-            select(UserRole).where(
-                UserRole.user_id == user_id,
-                UserRole.role_id == admin_role.id
+    async def has_permission(self, user_id: UUID, permission_name: str) -> bool:
+        result = await self.db.execute(
+            select(User)
+            .join(UserRole)
+            .join(Role)
+            .where(
+                User.id == user_id,
+                Role.name == permission_name
             )
         )
-        return bool(user_role.scalar_one_or_none())
+        return bool(result.scalar_one_or_none())
 
-    async def assign_role(
-        self,
-        role_operation: RoleOperation,
-        current_user_id: UUID
-    ) -> UserRole:
-        # Проверяем права администратора
-        if not await self._is_admin(current_user_id):
+    async def _get_user(self, user_id: UUID) -> User:
+        """Получает пользователя по id."""
+        result = await self.db.execute(
+            select(User).where(User.id == user_id)
+        )
+        user = result.scalar_one_or_none()
+        if not user:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail='Только администраторы могут назначать роли'
+                status_code=HTTPStatus.NOT_FOUND,
+                detail='Пользователь не найден'
             )
-        # Проверяем существование пользователя и роли
+        return user
+
+    async def _get_role(self, role_id: UUID) -> Role:
+        """Получает роль по id."""
+        result = await self.db.execute(
+            select(Role).where(Role.id == role_id)
+        )
+        role = result.scalar_one_or_none()
+        if not role:
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND,
+                detail='Роль не найдена'
+            )
+        return role
+
+    @permission_required("admin")
+    async def assign_role(self, role_operation: RoleOperation, current_user_id: UUID) -> UserRole:
+        """Назначение роли"""
         user = await self._get_user(role_operation.user_id)
         role = await self._get_role(role_operation.role_id)
-
-        # Проверяем, нет ли уже такой роли у пользователя
         existing_role = await self.db.execute(
             select(UserRole).where(
                 UserRole.user_id == role_operation.user_id,
@@ -115,26 +128,15 @@ class UserRoleService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail='Роль уже назначена пользователю'
             )
-
-        # Создаем новую запись о роли пользователя
         user_role = UserRole(user_id=user.id, role_id=role.id)
         self.db.add(user_role)
         await self.db.commit()
         await self.db.refresh(user_role)
         return user_role
 
-    async def remove_role(
-        self,
-        role_operation: RoleOperation,
-        current_user_id: UUID
-    ) -> None:
-        # Проверяем права администратора
-        if not await self._is_admin(current_user_id):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail='Только администраторы могут удалять роли'
-            )
-        # Проверяем существование связи пользователь-роль
+    @permission_required("admin")
+    async def remove_role(self, role_operation: RoleOperation, current_user_id: UUID) -> None:
+        """Удаление роли"""
         user_role = await self.db.execute(
             select(UserRole).where(
                 UserRole.user_id == role_operation.user_id,
@@ -147,6 +149,5 @@ class UserRoleService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Роль не назначена пользователю'
             )
-
         await self.db.delete(user_role)
         await self.db.commit()
