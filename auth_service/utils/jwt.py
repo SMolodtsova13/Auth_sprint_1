@@ -2,17 +2,25 @@ from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer
 
 from core.config import settings
 
+scheme = HTTPBearer()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
+
+def encode_jwt(to_encode: dict) -> str:
+    """Кодирует JWT."""
+    return jwt.encode(
+        to_encode,
+        settings.jwt_secret,
+        algorithm=settings.jwt_algorithm
+    )
 
 
 def create_access_token(
     sub: str,
-    # roles: list[str] = None
+    device_id: str,
 ) -> str:
     """
     Генерирует JWT access token с коротким сроком действия.
@@ -23,17 +31,13 @@ def create_access_token(
     to_encode = {
         'sub': sub,
         'type': 'access',
-        # 'roles': roles or [],
+        'device_id': device_id,
         'exp': expire
     }
-    return jwt.encode(
-        to_encode,
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm
-    )
+    return encode_jwt(to_encode)
 
 
-def create_refresh_token(sub: str, jti: str) -> str:
+def create_refresh_token(sub: str, device_id: str) -> str:
     """Генерирует JWT refresh token с долгим сроком действия."""
     expire = datetime.utcnow() + timedelta(
         days=settings.refresh_token_expire_days
@@ -41,14 +45,10 @@ def create_refresh_token(sub: str, jti: str) -> str:
     to_encode = {
         'sub': sub,
         'type': 'refresh',
-        'jti': jti,
+        'device_id': device_id,
         'exp': expire
     }
-    return jwt.encode(
-        to_encode,
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm
-    )
+    return encode_jwt(to_encode)
 
 
 def decode_jwt(

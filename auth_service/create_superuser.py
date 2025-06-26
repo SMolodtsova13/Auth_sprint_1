@@ -14,8 +14,6 @@ from services.base import BaseService
 
 app = typer.Typer()
 
-# TODO после написания сервисов сделать рефакторинг
-
 
 @app.command()
 def create_superuser():
@@ -24,7 +22,7 @@ def create_superuser():
 
 async def _check_user(db: AsyncSession, login):
     service = BaseService(db, User)
-    return await service.get_by_kwargs(login=login)
+    return await service.db.get_by_kwargs(login=login)
 
 
 async def _create_user(db: AsyncSession, login, password):
@@ -35,15 +33,15 @@ async def _create_user(db: AsyncSession, login, password):
         first_name='admin',
         last_name='admin'
     )
-    return await service.create(user_obj)
+    return await service.db.create(user_obj)
 
 
 async def _get_or_create_role(db: AsyncSession):
     service = BaseService(db, Role)
     obj = RoleCreateDto(name='superuser')
-    if db_obj := await service.get_by_kwargs(name=obj.name):
+    if db_obj := await service.db.get_by_kwargs(name=obj.name):
         return db_obj[0]
-    return await service.create(obj)
+    return await service.db.create(obj)
 
 
 async def _create_user_role(db: AsyncSession, user, role):

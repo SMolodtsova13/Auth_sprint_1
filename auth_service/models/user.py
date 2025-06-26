@@ -2,7 +2,6 @@ from sqlalchemy import Column, DateTime, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
-# from passlib.hash import bcrypt
 
 from models.base import Base
 from models.mixins import UUIDMixin, CreatedAtMixin
@@ -26,7 +25,7 @@ class User(UUIDMixin, CreatedAtMixin, Base):
         back_populates='user',
         lazy='selectin'
     )
-    roles = relationship('UserRole', back_populates='user', lazy="selectin")
+    roles = relationship('UserRole', back_populates='user', lazy='selectin')
 
     def __init__(
         self,
@@ -38,12 +37,10 @@ class User(UUIDMixin, CreatedAtMixin, Base):
         self.login = login
         # Хешируем пароль
         self.password = self.password = generate_password_hash(password)
-        # self.password = bcrypt.hash(password)
         self.first_name = first_name
         self.last_name = last_name
 
     def check_password(self, password: str) -> bool:
-        # return bcrypt.verify(password, self.password)
         return check_password_hash(self.password, password)
 
     def __repr__(self) -> str:
