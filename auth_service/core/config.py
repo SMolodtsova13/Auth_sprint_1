@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
+    project_name: str = 'Auth Service'
+
     # PostgreSQL
     postgres_user: str = 'postgres'
     postgres_password: str = 'postgres'
@@ -32,6 +34,14 @@ class Settings(BaseSettings):
             f'{settings.postgres_host}:{settings.postgres_port}/'
             f'{settings.postgres_db}'
         )
+
+    @property
+    def access_token_expire_seconds(self):
+        return self.access_token_expire_minutes * 60
+
+    @property
+    def refresh_token_expire_seconds(self):
+        return self.refresh_token_expire_days * 24 * 3600
 
 
 settings = Settings()

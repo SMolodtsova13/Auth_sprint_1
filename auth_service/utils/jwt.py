@@ -1,14 +1,21 @@
-import uuid
 from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
-
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer
 
 from core.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login')
+scheme = HTTPBearer()
+
+
+def encode_jwt(to_encode: dict) -> str:
+    """Кодирует JWT."""
+    return jwt.encode(
+        to_encode,
+        settings.jwt_secret,
+        algorithm=settings.jwt_algorithm
+    )
 
 
 def create_access_token(
@@ -27,11 +34,7 @@ def create_access_token(
         'device_id': device_id,
         'exp': expire
     }
-    return jwt.encode(
-        to_encode,
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm
-    )
+    return encode_jwt(to_encode)
 
 
 def create_refresh_token(sub: str, device_id: str) -> str:
@@ -45,11 +48,7 @@ def create_refresh_token(sub: str, device_id: str) -> str:
         'device_id': device_id,
         'exp': expire
     }
-    return jwt.encode(
-        to_encode,
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm
-    )
+    return encode_jwt(to_encode)
 
 
 def decode_jwt(

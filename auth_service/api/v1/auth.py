@@ -11,11 +11,11 @@ from schemas.user import (
     TokenResponse, ChangeCredentialsRequest
 )
 from services.user import get_current_user
-from services.registration import AuthService
+from services.registration import AuthService, get_auth_service
 from services.user_profile import change_user_credentials
 from services.authentication import authenticate_user, handle_refresh_token
 from db.postgres import get_session
-from db.redis_db import get_redis
+from db.cache import get_cache_storage
 
 
 refresh_scheme = HTTPBearer()
@@ -31,10 +31,10 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 )
 async def register_user(
     user_create: UserCreate,
-    db: AsyncSession = Depends(get_session)
+    auth_service: AuthService = Depends(get_auth_service)
 ):
     """Регистрирует нового пользователя."""
-    return await AuthService.register_user(user_create, db)
+    return await auth_service.register_user(user_create)
 
 
 @router.post(
@@ -62,15 +62,16 @@ async def login(
     summary='Обновление токенов'
 )
 async def refresh_token(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(refresh_scheme),
-    redis: Redis = Depends(get_redis),
+    redis: Redis = Depends(get_cache_storage),
 ) -> TokenResponse:
     """
     Принимает refresh-токен в Authorization: Bearer <token>.
     Возвращает новую пару токенов для того же device_id.
     """
     token = credentials.credentials
-    return await handle_refresh_token(token, redis)
+    return await handle_refresh_token(token, redis, request)
 
 
 @router.post(

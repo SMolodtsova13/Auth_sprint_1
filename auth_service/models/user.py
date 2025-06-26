@@ -25,7 +25,7 @@ class User(UUIDMixin, CreatedAtMixin, Base):
         back_populates='user',
         lazy='selectin'
     )
-    roles = relationship('UserRole', back_populates='user', lazy="selectin")
+    roles = relationship('UserRole', back_populates='user', lazy='selectin')
 
     def __init__(
         self,
