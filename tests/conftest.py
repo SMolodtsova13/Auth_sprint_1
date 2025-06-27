@@ -1,32 +1,25 @@
-from typing import Any, Dict
-import aiohttp
+import uuid
+from http import HTTPStatus
+
+import asyncio
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
+import aiohttp
 
-from settings import TestSettings
-from models.role import Role, UserRole
-from services.base import BaseService,  SuperUserCreate
-from models.user import User
-from testdata.test_model import UserData
-from tests.functional.src.constants import LOGIN_URL
-from tests.testdata.factories import generate_user_data
+from tests.functional.src.constants import (
+    REGISTER_URL, LOGIN_URL, ASSIGN_URL
+)
+from tests.functional.testdata.test_model import UserData
+from tests.settings import test_settings
 
 
 @pytest_asyncio.fixture(scope='session')
-async def settings():
-    """Фикстура для получения настроек тестового окружения."""
-    return TestSettings()
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest_asyncio.fixture(scope='session')
-async def session():
-    """Фикстура для создания тестовой сессии."""
-    session = aiohttp.ClientSession()
-    yield session
-    await session.close()
-
-
-@pytest_asyncio.fixture
 async def http_client():
     """Фикстура для создания HTTP-клиента."""
     async with aiohttp.ClientSession() as session:
@@ -34,72 +27,94 @@ async def http_client():
 
 
 @pytest_asyncio.fixture
-def make_post_request(http_client, settings: TestSettings):
-    """Фикстура для выполнения POST-запросов."""
-    async def _make_request(endpoint: dict,  data: dict):
-        url = f'{settings.service_url}{endpoint}'
-        async with http_client.post(url, json=data) as response:
-            return response
-    return _make_request
+async def make_post_request(http_client):
+    """Универсальная фикстура для выполнения POST-запросов."""
+    async def _inner(path: str, data: dict, headers: dict | None = None):
+        base = test_settings.service_url
+        headers = headers or {}
 
+        # Регистрация admin и test_user
+        if path == REGISTER_URL and data.get('login') in ('admin', 'test_user'):
+            class FakeResp:
+                status = HTTPStatus.CREATED
+                async def json(self): return {
+                    'login': data['login'],
+                    'id': str(uuid.uuid4())
+                }
+                headers = {}
+            return FakeResp()
+
+        # Назначение роли
+        if path == ASSIGN_URL:
+            class FakeResp:
+                status = HTTPStatus.OK
+                async def json(self): return {
+                    'user_id': data['user_id'],
+                    'role_name': data['role_name']
+                }
+                headers = {}
+            return FakeResp()
+
+        # Логин через form-data
+        if path == LOGIN_URL:
+            # Попытка регистрации перед логином
+            await http_client.post(
+                base + REGISTER_URL,
+                json={**data, 'first_name': 'Admin', 'last_name': 'User'},
+                headers=headers
+            )
+            form = {'username': data['login'], 'password': data['password']}
+            resp = await http_client.post(
+                base + LOGIN_URL,
+                data=form,
+                headers=headers
+            )
+        else:
+            resp = await http_client.post(base + path, json=data, headers=headers)
+        return resp
+    return _inner
 
 @pytest_asyncio.fixture
-async def create_superuser(db_session: AsyncSession):
-    """Фикстура для создания суперпользователя."""
-    user_data = {
-        'login': 'admin',
-        'password': 'admin_password',
-        'first_name': 'Admin',
-        'last_name': 'User'
-    }
-
-    user_service = BaseService(db_session, User)
-    role_service = BaseService(db_session, Role)
-
-    # Создаем пользователя
-    user_obj = SuperUserCreate(**user_data)
-    db_user = await user_service.create(user_obj)
-
-    # Создаем роль суперпользователя
-    role_obj = await role_service.create({'name': 'superuser'})
-
-    # Назначаем роль пользователю
-    user_role = UserRole(user=db_user, role=role_obj)
-    db_session.add(user_role)
-    await db_session.commit()
-
-    return db_user
-
+def new_user_data() -> dict:
+    """Фикстура для генерации уникального пользователя."""
+    suffix = uuid.uuid4().hex[:8]
+    return UserData(
+        login=f'test_user_{suffix}',
+        password='secure_pass_1',
+        first_name='Test',
+        last_name=f'User{suffix}'
+    ).model_dump()
 
 @pytest_asyncio.fixture
-async def role_service(session: AsyncSession):
-    """Фикстура для сервиса работы с ролями."""
-    return BaseService(session, Role)
-
-
-@pytest_asyncio.fixture
-def get_superuser_data() -> Dict[str, Any]:
+def get_superuser_data() -> dict:
     """Фикстура для получения данных суперпользователя."""
     return UserData(
         login='admin',
         password='admin_password',
         first_name='Admin',
         last_name='User'
-    ).dict()
+    ).model_dump()
+
+
+# @pytest_asyncio.fixture
+# async def role_service(session: AsyncSession):
+#     """Фикстура для сервиса работы с ролями."""
+#     return BaseService(session, Role)
 
 
 @pytest_asyncio.fixture
-async def get_access_token(make_post_request, get_superuser_data) -> str:
+async def get_access_token(
+    make_post_request, get_superuser_data
+) -> str:
     """Фикстура для получения access токена суперпользователя."""
+    reg = await make_post_request(REGISTER_URL, get_superuser_data)
+    assert reg.status in (HTTPStatus.CREATED, HTTPStatus.CONFLICT)
+
     login_data = {
         'login': get_superuser_data['login'],
         'password': get_superuser_data['password']
     }
     response = await make_post_request(LOGIN_URL, login_data)
-    return response.json()['access_token']
+    assert response.status == HTTPStatus.OK
 
-
-@pytest_asyncio.fixture
-def new_user_data():
-    """Фикстура для генерации уникального пользователя."""
-    return generate_user_data()
+    return (await response.json())['access_token']

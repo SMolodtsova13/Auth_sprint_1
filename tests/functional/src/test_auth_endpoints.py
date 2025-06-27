@@ -2,8 +2,8 @@ import pytest
 from http import HTTPStatus
 
 from tests.functional.src.constants import (
-    CHANGE_CREDENTIALS_URL, LOGIN_URL,
-    REFRESH_URL, REGISTER_URL
+    REGISTER_URL, LOGIN_URL,
+    REFRESH_URL, CHANGE_CREDENTIALS_URL
 )
 
 
@@ -14,8 +14,11 @@ class TestRegistration:
     async def test_user_registration(self, make_post_request, new_user_data):
         response = await make_post_request(REGISTER_URL, new_user_data)
         assert response.status == HTTPStatus.CREATED
+
         json_data = await response.json()
-        assert json_data['login'] == new_user_data['login']
+        assert 'id' in json_data
+        assert json_data['first_name'] == new_user_data['first_name']
+        assert json_data['last_name'] == new_user_data['last_name']
 
     async def test_registration_with_empty_password(
             self, make_post_request, new_user_data
@@ -53,8 +56,11 @@ class TestLogin:
         json_data = await response.json()
         assert 'access_token' in json_data
         assert 'refresh_token' in json_data
+        assert json_data.get('token_type') == 'bearer'
 
-    async def test_login_with_wrong_password(self, make_post_request, new_user_data):
+    async def test_login_with_wrong_password(
+            self, make_post_request, new_user_data
+        ):
         await make_post_request(REGISTER_URL, new_user_data)
 
         login_data = {
@@ -80,10 +86,9 @@ class TestTokenRefresh:
         tokens = await login_response.json()
 
         refresh_token = tokens['refresh_token']
+        headers = {'Authorization': f'Bearer {refresh_token}'}
         response = await make_post_request(
-            REFRESH_URL,
-            {},
-            headers={'Authorization': f'Bearer {refresh_token}'}
+            REFRESH_URL, {}, headers=headers
         )
         assert response.status == HTTPStatus.OK
 
@@ -113,9 +118,11 @@ class TestChangeCredentials:
 
         access_token = tokens['access_token']
         headers = {'Authorization': f'Bearer {access_token}'}
+
         new_credentials = {
             'new_login': f"{new_user_data['login']}_updated",
-            'new_password': 'new_secure_pass'
+            'new_password': 'new_secure_pass',
+            'current_password': new_user_data['password']
         }
 
         response = await make_post_request(
@@ -129,12 +136,16 @@ class TestChangeCredentials:
     async def test_change_credentials_without_auth(self, make_post_request):
         new_credentials = {
             'new_login': 'newlogin',
-            'new_password': 'newpassword123'
+            'new_password': 'newpassword123',
+            'current_password': 'whatever'
         }
         response = await make_post_request(CHANGE_CREDENTIALS_URL, new_credentials)
-        assert response.status == HTTPStatus.UNAUTHORIZED  # 401
+        assert response.status == HTTPStatus.FORBIDDEN  # 403
 
-    async def test_change_credentials_with_invalid_data(self, make_post_request, new_user_data):
+
+    async def test_change_credentials_with_invalid_data(
+            self, make_post_request, new_user_data
+        ):
         await make_post_request(REGISTER_URL, new_user_data)
 
         login_data = {
@@ -150,7 +161,7 @@ class TestChangeCredentials:
         # Пустой логин
         new_credentials = {
             'new_login': '',
-            'new_password': 'validpass123'
+            'current_password': new_user_data['password']
         }
         response = await make_post_request(
             CHANGE_CREDENTIALS_URL,
@@ -161,8 +172,8 @@ class TestChangeCredentials:
 
         # Короткий пароль
         new_credentials = {
-            'new_login': 'validlogin',
-            'new_password': '123'
+            'new_password': '123',
+            'current_password': new_user_data['password']
         }
         response = await make_post_request(
             CHANGE_CREDENTIALS_URL,
