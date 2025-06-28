@@ -1,9 +1,12 @@
 import uuid
 from http import HTTPStatus
 
-import pytest_asyncio
 import pytest
-from tests.functional.src.constants import ASSIGN_URL, REGISTER_URL, REMOVE_URL, ROLE_URL
+import pytest_asyncio
+
+from tests.functional.src.constants import (
+    ASSIGN_URL, REGISTER_URL, REMOVE_URL, ROLE_URL
+)
 
 @pytest_asyncio.fixture
 async def role_id(make_post_request_with_roles):
@@ -15,7 +18,12 @@ async def role_id(make_post_request_with_roles):
 class TestRoleAssignment:
     """Тесты назначения ролей пользователям."""
 
-    async def test_assign_role_to_user(self, make_post_request, make_post_request_with_roles, new_user_data, role_id):
+    async def test_assign_role_to_user(
+            self,
+            make_post_request,
+            make_post_request_with_roles,
+            new_user_data, role_id
+        ):
         reg = await make_post_request(REGISTER_URL, new_user_data)
         assert reg.status == HTTPStatus.CREATED
         user_id = (await reg.json())['id']
@@ -26,7 +34,13 @@ class TestRoleAssignment:
         })
         assert resp.status == HTTPStatus.OK
 
-    async def test_assign_same_role_twice(self, make_post_request, make_post_request_with_roles, new_user_data, role_id):
+    async def test_assign_same_role_twice(
+            self,
+            make_post_request,
+            make_post_request_with_roles,
+            new_user_data,
+            role_id
+        ):
         reg = await make_post_request(REGISTER_URL, new_user_data)
         assert reg.status == HTTPStatus.CREATED
         user_id = (await reg.json())['id']
@@ -39,7 +53,9 @@ class TestRoleAssignment:
 
         assert resp.status == HTTPStatus.CONFLICT
 
-    async def test_assign_role_to_nonexistent_user(self, make_post_request_with_roles, role_id):
+    async def test_assign_role_to_nonexistent_user(
+            self, make_post_request_with_roles, role_id
+        ):
         fake_user_id = str(uuid.uuid4())
         resp = await make_post_request_with_roles(ASSIGN_URL, {
             'user_id': fake_user_id,
@@ -47,7 +63,12 @@ class TestRoleAssignment:
         })
         assert resp.status in (HTTPStatus.NOT_FOUND, HTTPStatus.OK)
 
-    async def test_assign_nonexistent_role(self, make_post_request, make_post_request_with_roles, new_user_data):
+    async def test_assign_nonexistent_role(
+            self,
+            make_post_request,
+            make_post_request_with_roles,
+            new_user_data
+        ):
         reg = await make_post_request(REGISTER_URL, new_user_data)
         assert reg.status == HTTPStatus.CREATED
         user_id = (await reg.json())['id']
@@ -63,7 +84,12 @@ class TestRoleAssignment:
 class TestRoleRemoval:
     """Тесты удаления ролей у пользователей."""
 
-    async def test_remove_role_from_user(self, make_post_request, make_post_request_with_roles, new_user_data, role_id):
+    async def test_remove_role_from_user(
+            self,
+            make_post_request,
+            make_post_request_with_roles,
+            new_user_data, role_id
+        ):
         reg = await make_post_request(REGISTER_URL, new_user_data)
         assert reg.status == HTTPStatus.CREATED
         user_id = (await reg.json())['id']
@@ -80,7 +106,12 @@ class TestRoleRemoval:
         })
         assert remove.status == HTTPStatus.OK
 
-    async def test_remove_unassigned_role(self, make_post_request, make_post_request_with_roles, new_user_data, role_id):
+    async def test_remove_unassigned_role(
+            self,
+            make_post_request,
+            make_post_request_with_roles,
+            new_user_data, role_id
+        ):
         reg = await make_post_request(REGISTER_URL, new_user_data)
         assert reg.status == HTTPStatus.CREATED
         user_id = (await reg.json())['id']

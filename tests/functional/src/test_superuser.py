@@ -1,9 +1,12 @@
+import uuid
 import pytest
 from http import HTTPStatus
-import uuid
 
-from tests.functional.src.constants import ASSIGN_URL, LOGIN_URL, REGISTER_URL, ROLE_URL
+from tests.functional.src.constants import (
+    ASSIGN_URL, LOGIN_URL, REGISTER_URL, ROLE_URL
+)
 from tests.functional.testdata.test_model import UserData
+
 
 @pytest.mark.asyncio
 async def test_create_superuser(make_post_request, get_superuser_data):
@@ -11,12 +14,12 @@ async def test_create_superuser(make_post_request, get_superuser_data):
     data = get_superuser_data
     response = await make_post_request(REGISTER_URL, data)
 
-    # приемлем как создание, так и существование
     assert response.status in (HTTPStatus.CREATED, HTTPStatus.CONFLICT)
     if response.status == HTTPStatus.CREATED:
         body = await response.json()
         assert body['login'] == data['login']
         assert 'password' not in body
+
 
 @pytest.mark.asyncio
 async def test_superuser_login(make_post_request, get_superuser_data):
@@ -31,6 +34,7 @@ async def test_superuser_login(make_post_request, get_superuser_data):
     body = await response.json()
     assert 'access_token' in body
     assert 'refresh_token' in body
+
 
 @pytest.mark.asyncio
 async def test_superuser_role_assignment(
