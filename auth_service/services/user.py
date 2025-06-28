@@ -61,21 +61,6 @@ async def get_current_user(
     payload = decode_jwt(token, token_type='access')
     user_id = payload['sub']
 
-    '''try:
-        payload = decode_jwt(token, verify_exp=True, token_type='access')
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Недействительный или истекщий токен'
-        )
-
-    user_id = payload.get('sub')
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Отсутствует токен'
-        )'''
-
     user = await user_service.get_obj_or_404(user_id)
     if await cache.get(f'invalid_access_token:{user_id}:{token}'):
         raise HTTPException(
