@@ -1,0 +1,67 @@
+services:
+
+  redis:
+    image: redis:5.0.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:13
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth_service:
+    build: ./auth_service
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/openapi.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tests:
+    image: python:3.11
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./reports:/app/reports
+    env_file:
+      - ./auth_service/.env
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      auth_service:
+        condition: service_healthy
+    entrypoint: >
+      bash -lc "
+        set -euo pipefail &&
+        pip install --no-cache-dir -r auth_service/requirements.txt &&
+        pip install --no-cache-dir -r tests/requirements.txt &&
+        cd auth_service &&
+        alembic upgrade head &&
+        cd /app &&
+        mkdir -p reports &&
+        pytest \
+          --disable-warnings \
+          -vv \
+          --html=reports/report.html \
+          --self-contained-html
+      "

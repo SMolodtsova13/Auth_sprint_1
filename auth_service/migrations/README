@@ -1,0 +1,9 @@
+Generic single-database configuration with an async dbapi.
+
+Для применения миграций запустить команду:
+
+alembic upgrade head
+
+При изменении моделей для создания новых миграций применить команду:
+
+alembic revision --autogenerate -m "Name migrations"
