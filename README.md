@@ -69,7 +69,7 @@
 python3 create_superuser.py
 ```
 
-## 🧪 Запуск проекта
+## Запуск проекта
 
 ### 🐳 Через Docker
 
@@ -87,6 +87,12 @@ docker-compose up -d
 
 ```bash
 docker-compose exec auth_service alembic upgrade head
+```
+
+### 🧪 Запуск тестов
+
+```bash
+docker-compose -f docker-compose.tests.yml up --build --abort-on-container-exit --exit-code-from tests
 ```
 
 ## 🔐 Токены

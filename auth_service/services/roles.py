@@ -72,20 +72,6 @@ class UserRoleService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    """async def has_permission(
-        self, user_id: UUID, permission_name: str
-    ) -> bool:
-        result = await self.db.execute(
-            select(User)
-            .join(UserRole)
-            .join(Role)
-            .where(
-                User.id == user_id,
-                Role.name == permission_name
-            )
-        )
-        return bool(result.scalar_one_or_none())"""
-
     async def _get_user(self, user_id: UUID) -> User:
         """Получает пользователя по id."""
         result = await self.db.execute(

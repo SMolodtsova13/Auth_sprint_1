@@ -27,6 +27,11 @@ services:
       - 8000:8000
     env_file:
       - .env
+    healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:8000/api/openapi.json || exit 1"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
     depends_on:
       - redis
       - db

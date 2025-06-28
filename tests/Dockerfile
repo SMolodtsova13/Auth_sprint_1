@@ -1,11 +1,17 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-WORKDIR /tests
+WORKDIR /app
 
-COPY requirements.txt .
+COPY auth_service/requirements.txt ./auth_requirements.txt
+RUN pip install --no-cache-dir -r auth_requirements.txt
 
-RUN pip install -r requirements.txt --no-cache-dir
+COPY tests/requirements.txt ./tests_requirements.txt
+RUN pip install --no-cache-dir -r tests_requirements.txt
 
-COPY . .
+COPY auth_service ./auth_service
+COPY tests ./tests
 
-CMD ["pytest"]
+ENTRYPOINT [ "bash", "-lc", "\
+    cd auth_service && alembic upgrade head && \
+    cd /app && pytest --disable-warnings -s \
+" ]

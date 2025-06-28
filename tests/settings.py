@@ -21,11 +21,12 @@ class TestSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file='.env',
         env_file_encoding='utf-8',
-        env_nested_delimiter='_'
+        env_nested_delimiter='_',
+        extra='ignore'
     )
 
     redis: Redis
-    service_url: str = 'http://api:8000'
+    service_url: str = 'http://auth_service:8000'
 
 
 test_settings = TestSettings()
