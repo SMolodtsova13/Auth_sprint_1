@@ -26,8 +26,7 @@ async def get_login_history(
     """Вывод истории входов пользователя."""
     return await user_service.get_user_login_history(
         request_user=user,
-        page=pagination.page_number,
-        size=pagination.page_size
+        pagination=pagination
     )
 
 

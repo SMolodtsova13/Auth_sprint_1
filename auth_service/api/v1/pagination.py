@@ -8,7 +8,7 @@ class PaginationParams:
             1, ge=1, description='Номер страницы'
         ),
         page_size: int = Query(
-            50,
+            10,
             ge=1,
             le=100,
             description='Количество записей на странице'
