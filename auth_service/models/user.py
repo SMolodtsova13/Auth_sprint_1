@@ -58,7 +58,7 @@ class LoginHistory(UUIDMixin, Base):
     __tablename__ = 'login_history'
 
     user_id = Column(
-        UUID, ForeignKey('users.id', ondelete="CASCADE"), nullable=False
+        UUID, ForeignKey('users.id', ondelete='CASCADE'), nullable=False
     )
     user = relationship(
         'User',
