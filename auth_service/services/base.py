@@ -10,8 +10,9 @@ from services.db import DbService
 class BaseService:
     """Базовый сервис."""
 
-    def __init__(self, db: AsyncSession, model: Base) -> None:
-        self.db = DbService(db, model)
+    def __init__(self, db_session: AsyncSession, model: Base) -> None:
+        self.db_session = db_session
+        self.db = DbService(db_session, model)
 
     async def get_obj_or_404(self, id: UUID) -> Base:
         """Метод получения объекта модели по id."""
