@@ -3,6 +3,7 @@ from functools import lru_cache
 from fastapi import Depends, HTTPException, status, Response, Request
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
 
 from core.config import settings
 from db.cache import CacheStorage, get_cache_storage
@@ -10,6 +11,7 @@ from db.postgres import get_session
 from models.user import User, LoginHistory
 from services.base import BaseService
 from utils.jwt import decode_jwt, scheme
+from schemas.user import PaginatedLoginHistory, LoginHistoryDto
 
 
 class UserService(BaseService):
@@ -20,10 +22,34 @@ class UserService(BaseService):
         super().__init__(*args, **kwargs)
 
     async def get_user_login_history(
-        self, request_user: User
-    ) -> list[LoginHistory]:
+        self, request_user: User, page: int = 1, size: int = 10
+    ) -> PaginatedLoginHistory:
         """Получение истории входов пользователя."""
-        return request_user.login_history
+        offset = (page - 1) * size
+
+        # используем self.db_session — это AsyncSession
+        total_stmt = select(func.count(LoginHistory.id)).where(
+                LoginHistory.user_id == request_user.id
+            )
+        total_result = await self.db_session.execute(total_stmt)
+        total = total_result.scalar_one()
+
+        stmt = (
+            select(LoginHistory)
+            .where(LoginHistory.user_id == request_user.id)
+            .order_by(LoginHistory.login_at.desc())
+            .offset(offset)
+            .limit(size)
+        )
+        result = await self.db_session.execute(stmt)
+        items = result.scalars().all()
+
+        return PaginatedLoginHistory(
+            total=total,
+            page=page,
+            size=size,
+            items=[LoginHistoryDto.from_orm(item) for item in items]
+        )
 
     async def logout_user(
         self,

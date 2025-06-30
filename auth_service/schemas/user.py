@@ -1,7 +1,7 @@
+from uuid import UUID
 from datetime import datetime
 
-from pydantic import BaseModel, constr, model_validator
-
+from pydantic import BaseModel, constr, model_validator, ConfigDict
 from core.constants import (
     LOGIN_MAX_LENGTH, LOGIN_MIN_LENGTH,
     PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH
@@ -88,9 +88,16 @@ class ChangeCredentialsRequest(BaseModel):
 
 class LoginHistoryDto(BaseModel):
     """Схема истории входов пользователя."""
-
+    id: UUID
     user_agent: str | None
     login_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedLoginHistory(BaseModel):
+    """Схема пагинированного ответа истории входов."""
+    total: int
+    page: int
+    size: int
+    items: list[LoginHistoryDto]
