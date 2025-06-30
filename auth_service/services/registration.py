@@ -2,10 +2,12 @@ from functools import lru_cache
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from core.constants import PASSWORD_MIN_LENGTH
 from db.postgres import get_session
 from models.user import User
+from models.role import Role, UserRole
 from schemas.user import UserCreate
 from services.base import BaseService
 
@@ -29,7 +31,20 @@ class AuthService(BaseService):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Пароль слишком простой (менее 6 символов).'
             )
-        return await self.db.create(user_create)
+
+        user = await self.db.create(user_create)
+
+        result = await self.db.db.execute(
+            select(Role).where(Role.name == 'user')
+        )
+        default_role = result.scalar_one_or_none()
+
+        if default_role:
+            user_role = UserRole(user_id=user.id, role_id=default_role.id)
+            self.db.db.add(user_role)
+            await self.db.db.commit()
+
+        return user
 
 
 @lru_cache()

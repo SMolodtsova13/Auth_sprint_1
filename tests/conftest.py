@@ -6,7 +6,10 @@ import aiohttp
 import pytest_asyncio
 
 from tests.functional.src.constants import (
-    REGISTER_URL, LOGIN_URL, ASSIGN_URL, REMOVE_URL, ROLE_URL
+    REGISTER_URL, LOGIN_URL,
+    ASSIGN_URL, REMOVE_URL,
+    ROLE_URL, USER_LOGOUT_URL,
+    USER_LOGIN_HISTORY_URL
 )
 from tests.functional.testdata.test_model import UserData
 from tests.settings import test_settings
@@ -34,6 +37,15 @@ async def make_post_request(http_client):
     async def _inner(path: str, data: dict, headers: dict | None = None):
         base = test_settings.service_url
         headers = headers or {}
+
+        if path == USER_LOGIN_HISTORY_URL:
+            return await http_client.get(
+                base + path, headers=headers
+            )
+        if path == USER_LOGOUT_URL:
+            return await http_client.post(
+                base + path, headers=headers
+            )
 
         if path == ROLE_URL:
             class Fake:
