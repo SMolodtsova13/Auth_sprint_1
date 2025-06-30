@@ -23,9 +23,15 @@ class User(UUIDMixin, CreatedAtMixin, Base):
     login_history = relationship(
         'LoginHistory',
         back_populates='user',
-        lazy='selectin'
+        lazy='selectin',
+        passive_deletes=True
     )
-    roles = relationship('UserRole', back_populates='user', lazy='selectin')
+    roles = relationship(
+        'UserRole',
+        back_populates='user',
+        lazy='selectin',
+        passive_deletes=True
+    )
 
     def __init__(
         self,
@@ -35,8 +41,7 @@ class User(UUIDMixin, CreatedAtMixin, Base):
         last_name: str
     ) -> None:
         self.login = login
-        # Хешируем пароль
-        self.password = self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
 
@@ -52,7 +57,9 @@ class LoginHistory(UUIDMixin, Base):
 
     __tablename__ = 'login_history'
 
-    user_id = Column(UUID, ForeignKey('users.id'))
+    user_id = Column(
+        UUID, ForeignKey('users.id', ondelete='CASCADE'), nullable=False
+    )
     user = relationship(
         'User',
         back_populates='login_history',
