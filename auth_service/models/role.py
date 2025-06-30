@@ -25,7 +25,9 @@ class UserRole(UUIDMixin, Base):
 
     __tablename__ = 'user_roles'
 
-    user_id = Column(UUID, ForeignKey('users.id'))
+    user_id = Column(
+        UUID, ForeignKey('users.id', ondelete="CASCADE"), nullable=False
+    )
     user = relationship(
         'User',
         back_populates='roles',
